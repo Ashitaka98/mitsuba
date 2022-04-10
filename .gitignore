@@ -48,3 +48,10 @@ mitsuba.*.log
 .settings
 .cproject
 .project
+
+
+# scene
+scenes/*
+
+# .vscode
+.vscode
