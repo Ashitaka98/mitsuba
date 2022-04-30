@@ -4,13 +4,25 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/scene.h>
 #include <mitsuba/core/fstream.h>
+#include <mitsuba/utils/sh_encode.h>
+#include <onnxruntime_cxx_api.h>
 MTS_NAMESPACE_BEGIN
+
+const char *model_path = "!!! Not set yet !!!";
 
 class NeuralBSDF : public BSDF
 {
 public:
     NeuralBSDF(const Properties &props) : BSDF(props)
     {
+        /** Load .onnx network **/
+        Ort::SessionOptions session_options;
+        session_options.SetIntraOpNumThreads(1);
+        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        Ort::Env env;
+        Ort::Session session(env, model_path, session_options);
+
+        props.getFloat("alpha0", 0);
         Log(EInfo, "NeuralBSDF constructed");
     }
     NeuralBSDF(Stream *stream, InstanceManager *manager) : BSDF(stream, manager)
@@ -25,13 +37,9 @@ public:
     {
     }
     Spectrum eval(const BSDFSamplingRecord &bRec,
-                  EMeasure measure = ESolidAngle) const
-    {
-        Spectrum ret;
-        ret[0] = 1;
-        return ret;
-    }
-    Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const
+                  EMeasure measure = ESolidAngle) const {
+        bRec.wi.x
+            bRec.wo} Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const
     {
         Spectrum ret;
         ret[0] = 1;
