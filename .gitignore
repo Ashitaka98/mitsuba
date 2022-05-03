@@ -17,6 +17,7 @@ debian
 .sconsign.dblite
 config.log
 *.pyc
+include/misc/build
 
 # MSVC++-related
 build/mitsuba-msvc2017.sdf
