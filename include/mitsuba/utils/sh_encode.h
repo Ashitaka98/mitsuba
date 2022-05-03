@@ -43,7 +43,7 @@ private:
         fclose(sh_table_file);
     }
     static SH_Encode *instance;
-    atom public : SH_Encode *getInstance()
+    public : SH_Encode *getInstance()
     {
 
         if (instance)
