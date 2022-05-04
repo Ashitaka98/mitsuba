@@ -1,6 +1,13 @@
-#ifdef DEBUG
+#pragma once
+#ifndef __MLP_H_
+#define __MLP_H_
+#ifdef MLP_DEBUG
 #include <iostream>
 #endif
+inline float relu(float x)
+{
+    return x > 0 ? x : 0;
+}
 
 template <int input_dim, int output_dim>
 class Layer
@@ -41,8 +48,9 @@ public:
             {
                 outputs[i] += _weights[i][j] * inputs[j];
             }
+            outputs[i] = relu(outputs[i]);
         }
-#ifdef DEBUG
+#ifdef MLP_DEBUG
         for (int i = 0; i < output_dim; i++)
             std::cout << outputs[i] << " ";
         std::cout << std::endl;
@@ -91,3 +99,5 @@ public:
     }
     Layer<input_dim, output_dim> _layer;
 };
+
+#endif /* __MLP_H_ */
