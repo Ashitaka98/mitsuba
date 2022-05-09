@@ -39,7 +39,7 @@ public:
             p++;
         }
     }
-    inline void feedforward(float *inputs, float *outputs)
+    inline void feedforward(float *inputs, float *outputs) const
     {
         for (int i = 0; i < output_dim; i++)
         {
@@ -73,7 +73,7 @@ public:
     /*
         feedforward should be thread-safe
     */
-    inline void feedforward(float *inputs, float *outputs)
+    inline void feedforward(float *inputs, float *outputs) const
     {
         float buf[dim0];
         _layer0.feedforward(inputs, buf);
@@ -81,6 +81,7 @@ public:
     }
     Layer<input_dim, dim0> _layer0;
     MLP<dim0, args...> _rest;
+    static const int num_weights = input_dim * dim0 + decltype(_rest)::num_weights;
 };
 
 template <int input_dim, int output_dim>
@@ -93,10 +94,11 @@ public:
     MLP(float *buffer) : _layer(buffer)
     {
     }
-    inline void feedforward(float *inputs, float *outputs)
+    inline void feedforward(float *inputs, float *outputs) const
     {
         _layer.feedforward(inputs, outputs);
     }
+    static const int num_weights = input_dim * output_dim;
     Layer<input_dim, output_dim> _layer;
 };
 
