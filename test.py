@@ -5,4 +5,4 @@ samplerProps = Properties('independent')
 samplerProps['sampleCount'] = 128
 sampler = pmgr.createObject(samplerProps)
 sampler.configure()
-bsdf = pmgr.create({'type': 'neuralbsdf'})
+bsdf = pmgr.create({'type': 'svneuralbsdf'})

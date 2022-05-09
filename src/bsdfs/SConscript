@@ -29,6 +29,7 @@ plugins += env.SharedLibrary('null', ['null.cpp'])
 plugins += env.SharedLibrary('thindielectric', ['thindielectric.cpp'])
 
 # add by Zeru
+plugins += env.SharedLibrary('svneuralbsdf', ['svneuralbsdf.cpp'])
 plugins += env.SharedLibrary('neuralbsdf', ['neuralbsdf.cpp'])
 
 # The Irawan-Marschner plugin uses a Boost::Spirit parser, which makes it
