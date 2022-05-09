@@ -7,6 +7,10 @@
 #include <onnxruntime_cxx_api.h>
 #include <misc/MLP.h>
 #include <misc/sh_encode.h>
+#include <misc/utils.h>
+#ifndef MIU
+#define MIU 32
+#endif
 MTS_NAMESPACE_BEGIN
 class NeuralBSDF : public BSDF
 {
@@ -40,9 +44,6 @@ public:
         for (int i = 0; i < BRDFNet::num_weights; i++)
         {
             fscanf(model_file, "%f", &weights[i]);
-#ifdef NBSDF_DEBUG
-            Log(EInfo, "%d", weights[i]);
-#endif
         }
         m_brdf = new BRDFNet(weights);
     }
@@ -54,6 +55,7 @@ public:
         auto whwd = SH_Encode::convert_to_rusinkiewicz_xyz(wi.x, wi.y, wi.z, wo.x, wo.y, wo.z);
         float pred[3];
         m_brdf->feedforward(whwd.xyz, pred);
+        inverse_miu_law_compression(MIU, pred, 3);
         return Spectrum(pred);
     }
     Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const override

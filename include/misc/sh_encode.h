@@ -231,7 +231,13 @@ public:
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
 
-        Omega_io_xyz whwd{hx, hy, hz, d[0], d[1], d[2]};
+        Omega_io_xyz whwd;
+        whwd.xyz[0] = hx;
+        whwd.xyz[1] = hy;
+        whwd.xyz[2] = hz;
+        whwd.xyz[3] = d[0];
+        whwd.xyz[4] = d[1];
+        whwd.xyz[5] = d[2];
         return whwd;
     }
 
