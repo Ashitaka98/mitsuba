@@ -4,9 +4,9 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/scene.h>
 #include <mitsuba/core/fstream.h>
-#include <mitsuba/utils/sh_encode.h>
 #include <onnxruntime_cxx_api.h>
-#include <misc/MLP.hpp>
+#include <misc/sh_encode.h>
+#include <misc/MLP.h>
 MTS_NAMESPACE_BEGIN
 #ifndef SH_ENCODING_DIM
 #define SH_ENCODING_DIM 49
