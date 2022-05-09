@@ -81,7 +81,7 @@ public:
     }
     Layer<input_dim, dim0> _layer0;
     MLP<dim0, args...> _rest;
-    static const int num_weights = input_dim * dim0 + decltype(_rest)::num_weights;
+    static const int num_weights = input_dim * dim0 + dim0 + decltype(_rest)::num_weights;
 };
 
 template <int input_dim, int output_dim>
@@ -98,7 +98,7 @@ public:
     {
         _layer.feedforward(inputs, outputs);
     }
-    static const int num_weights = input_dim * output_dim;
+    static const int num_weights = input_dim * output_dim + output_dim;
     Layer<input_dim, output_dim> _layer;
 };
 
