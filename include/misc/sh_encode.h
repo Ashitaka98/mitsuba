@@ -5,11 +5,11 @@
 #include <cmath>
 #include <cassert>
 
-const int SH_SAMPLE_RATE = 1000;
-const int SH_TABLE_SIZE = SH_SAMPLE_RATE * SH_SAMPLE_RATE;
-const int SH_DIMS = 81;
+static const int SH_SAMPLE_RATE = 1000;
+static const int SH_TABLE_SIZE = SH_SAMPLE_RATE * SH_SAMPLE_RATE;
+static const int SH_DIMS = 81;
 
-const float pi = acos(-1);
+static const float pi = acos(-1);
 
 struct Omega_io
 {
