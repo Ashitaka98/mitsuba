@@ -66,13 +66,13 @@ public:
         if (Frame::cosTheta(bRec.wi) <= 0)
             return Spectrum(0.0);
         Vector wi = bRec.wi;
-        Vector wo = warp::squareToCosineHemisphere(sample);
+        Vector wo = warp::squareToUniformHemisphere(sample);
         bRec.wo = wo;
         Omega_io_xyz wiwo{wi.x, wi.y, wi.z, wo.x, wo.y, wo.z};
         float pred[3];
         m_brdf->feedforward(wiwo.xyz, pred);
         inverse_miu_law_compression(MIU, pred, 3);
-        return Spectrum(pred) / warp::squareToCosineHemispherePdf(wo);
+        return Spectrum(pred) / warp::squareToUniformHemispherePdf();
     }
     Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf,
                     const Point2 &sample) const override
@@ -80,13 +80,13 @@ public:
         if (Frame::cosTheta(bRec.wi) <= 0)
             return Spectrum(0.0);
         Vector wi = bRec.wi;
-        Vector wo = warp::squareToCosineHemisphere(sample);
+        Vector wo = warp::squareToUniformHemisphere(sample);
         bRec.wo = wo;
         Omega_io_xyz wiwo{wi.x, wi.y, wi.z, wo.x, wo.y, wo.z};
         float pred[3];
         m_brdf->feedforward(wiwo.xyz, pred);
         inverse_miu_law_compression(MIU, pred, 3);
-        pdf = warp::squareToCosineHemispherePdf(wo);
+        pdf = warp::squareToUniformHemispherePdf();
         return Spectrum(pred) / pdf;
     }
     Float pdf(const BSDFSamplingRecord &bRec,
@@ -94,7 +94,7 @@ public:
     {
         if (measure != ESolidAngle || Frame::cosTheta(bRec.wi) <= 0 || Frame::cosTheta(bRec.wo) <= 0)
             return 0.0f;
-        return warp::squareToCosineHemispherePdf(bRec.wo);
+        return warp::squareToUniformHemispherePdf();
     }
     Spectrum getDiffuseReflectance(const Intersection &its) const override
     {
