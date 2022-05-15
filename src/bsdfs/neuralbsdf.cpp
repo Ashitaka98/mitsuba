@@ -44,7 +44,7 @@ public:
         {
             fscanf(model_file, "%f", &weights[i]);
         }
-        m_brdf = new BRDFNet(weights);
+        m_brdf = std::unique_ptr<BRDFNet>(new BRDFNet(weights));
     }
     // since our bsdfnet is trained on bsdf value multipied by cosine foreshortening factor
     // there is no need to multiply cosine foreshortening factor
@@ -111,7 +111,7 @@ public:
     MTS_DECLARE_CLASS()
 private:
     std::string m_modelpath;
-    ref<BRDFNet> m_brdf;
+    std::unique_ptr<BRDFNet> m_brdf;
 };
 
 MTS_IMPLEMENT_CLASS_S(NeuralBSDF, false, BSDF);
