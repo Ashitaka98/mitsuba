@@ -37,6 +37,7 @@ public:
     }
     void configure() override
     {
+        m_components.push_back(EDiffuseReflection | EFrontSide);
         float weights[BRDFNet::num_weights];
         FILE *model_file = fopen(m_modelpath.c_str(), "r");
         Log(EInfo, "MLP weights number: %d", BRDFNet::num_weights);
@@ -45,9 +46,9 @@ public:
             fscanf(model_file, "%f", &weights[i]);
         }
         m_brdf = std::unique_ptr<BRDFNet>(new BRDFNet(weights));
+        BSDF::configure();
     }
-    // since our bsdfnet is trained on bsdf value multipied by cosine foreshortening factor
-    // there is no need to multiply cosine foreshortening factor
+
     Spectrum eval(const BSDFSamplingRecord &bRec,
                   EMeasure measure = ESolidAngle) const override
     {
@@ -59,7 +60,7 @@ public:
         float pred[3];
         m_brdf->feedforward(wiwo.xyz, pred);
         inverse_miu_law_compression(MIU, pred, 3);
-        return Spectrum(pred);
+        return Spectrum(pred) * Frame::cosTheta(bRec.wo);
     }
     Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &sample) const override
     {
@@ -72,7 +73,7 @@ public:
         float pred[3];
         m_brdf->feedforward(wiwo.xyz, pred);
         inverse_miu_law_compression(MIU, pred, 3);
-        return Spectrum(pred) / warp::squareToUniformHemispherePdf();
+        return Spectrum(pred) * Frame::cosTheta(bRec.wo) / warp::squareToUniformHemispherePdf();
     }
     Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf,
                     const Point2 &sample) const override
@@ -87,7 +88,7 @@ public:
         m_brdf->feedforward(wiwo.xyz, pred);
         inverse_miu_law_compression(MIU, pred, 3);
         pdf = warp::squareToUniformHemispherePdf();
-        return Spectrum(pred) / pdf;
+        return Spectrum(pred) * Frame::cosTheta(bRec.wo) / pdf;
     }
     Float pdf(const BSDFSamplingRecord &bRec,
               EMeasure measure = ESolidAngle) const override
