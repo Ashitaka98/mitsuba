@@ -128,22 +128,28 @@ public:
     static const int num_injected = input_dim1 - dim0 + decltype(_rest)::num_injected;
 };
 
-template <int input_dim, int output_dim>
-class injected_MLP
+template <int input_dim0, int dim0, int input_dim1, int dim1>
+class injected_MLP<input_dim0, dim0, input_dim1, dim1>
 {
 public:
     injected_MLP() : _layer0()
     {
     }
-    injected_MLP(float *weights, float *injected_units) : _layer(weights)
+    injected_MLP(float *weights, float *injected_units) : _layer0(weights), _layer1(weights + input_dim0 * dim0 + dim0)
     {
+        memcpy(injected, injected_units, sizeof(float) * (input_dim1 - dim0));
     }
     inline void feedforward(float *inputs, float *outputs) const
     {
-        _layer.feedforward(inputs, outputs);
+        float buf[input_dim1];
+        _layer0.feedforward(inputs, buf);
+        memcpy(&buf[dim0], injected, sizeof(float) * (input_dim1 - dim0));
+        _layer1.feedforward(buf, outputs);
     }
-    static const int num_weights = input_dim * output_dim + output_dim;
-    static const int num_injected = 0;
-    Layer<input_dim, output_dim> _layer;
+    Layer<input_dim0, dim0> _layer0;
+    float injected[input_dim1 - dim0];
+    Layer<input_dim1, dim1> _layer1;
+    static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
+    static const int num_injected = input_dim1 - dim0;
 };
 #endif /* __MLP_H_ */

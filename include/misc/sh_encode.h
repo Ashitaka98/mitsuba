@@ -64,7 +64,7 @@ private:
     static SH_Encode *instance;
 
 public:
-    SH_Encode *getInstance()
+    static SH_Encode *getInstance()
     {
         if (instance)
             return instance;
@@ -244,6 +244,18 @@ public:
     template <int dim>
     SH_basis<dim> eval_sh_basis(float theta, float phi)
     {
+        int idx_theta = SH_SAMPLE_RATE * theta / (2 * pi);
+        int idx_phi = SH_SAMPLE_RATE * theta / pi;
+        int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
+        return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
+    }
+    template <int dim>
+    SH_basis<dim> eval_sh_basis(float x, float y, float z)
+    {
+        float phi = acos(z);
+        float theta = atan2(y, x);
+        if (theta < 0)
+            theta += 2 * pi;
         int idx_theta = SH_SAMPLE_RATE * theta / (2 * pi);
         int idx_phi = SH_SAMPLE_RATE * theta / pi;
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
