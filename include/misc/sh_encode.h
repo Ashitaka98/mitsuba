@@ -233,7 +233,8 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-
+        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
+        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
         Omega_io_xyz whwd;
         whwd.xyz[0] = hx;
         whwd.xyz[1] = hy;
