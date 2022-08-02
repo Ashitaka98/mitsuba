@@ -248,7 +248,7 @@ public:
     SH_basis<dim> eval_sh_basis(float theta, float phi)
     {
         int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
-        int idx_phi = floor(SH_SAMPLE_RATE * theta / pi);
+        int idx_phi = floor(SH_SAMPLE_RATE * phi / pi);
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
@@ -260,7 +260,7 @@ public:
         if (theta < 0)
             theta += 2 * pi - 0.00001;
         int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
-        int idx_phi = floor(SH_SAMPLE_RATE * theta / pi);
+        int idx_phi = floor(SH_SAMPLE_RATE * phi / pi);
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
