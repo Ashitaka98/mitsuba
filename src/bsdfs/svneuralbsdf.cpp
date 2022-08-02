@@ -18,7 +18,7 @@ MTS_NAMESPACE_BEGIN
 class SVNeuralBSDF : public BSDF
 {
 
-    using BRDFNet = injected_MLP<INPUT_DIM, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 1>;
+    using BRDFNet = injected_MLP<INPUT_DIM, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 192, 224, 1>;
 
 public:
     SVNeuralBSDF(const Properties &props) : BSDF(props)
@@ -126,6 +126,8 @@ public:
             }
             m_brdf_b = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
         }
+
+        Log(EInfo, "SVNeuralBSDF configured");
         BSDF::configure();
     }
     Spectrum eval(const BSDFSamplingRecord &bRec,
@@ -138,7 +140,7 @@ public:
         float inputs[INPUT_DIM];
         float pred[3];
         Omega_io_xyz wiwo{wi.x, wi.y, wi.z, wo.x, wo.y, wo.z};
-        Omega_io_xyz whwd = sh_encode->convert_to_rusinkiewicz_xyz(wi.x, wi.y, wi.z, wo.x, wo.y, wo.z);
+        Omega_io_xyz whwd = SH_Encode::convert_to_rusinkiewicz_xyz(wi.x, wi.y, wi.z, wo.x, wo.y, wo.z);
         SH_basis<SH_DIMS> sh_i, sh_o;
         if (m_flag_useWhWd)
         {

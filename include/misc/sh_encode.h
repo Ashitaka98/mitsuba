@@ -5,9 +5,9 @@
 #include <cmath>
 #include <cassert>
 
-static const int SH_SAMPLE_RATE = 1000;
-static const int SH_TABLE_SIZE = SH_SAMPLE_RATE * SH_SAMPLE_RATE;
-static const int SH_DIMS = 81;
+#define SH_SAMPLE_RATE 1000
+#define SH_TABLE_SIZE (SH_SAMPLE_RATE * SH_SAMPLE_RATE)
+#define SH_DIMS 81
 
 static const float pi = acos(-1);
 
@@ -45,6 +45,7 @@ private:
     SH_Encode()
     {
         FILE *sh_table_file = fopen("/home/lzr/Projects/mitsuba/data/sh_table/sh_table.txt", "r");
+        assert(sh_table_file);
         for (int i = 0; i < SH_TABLE_SIZE; i++)
         {
             for (int j = 0; j < SH_DIMS; j++)
@@ -61,15 +62,14 @@ private:
 #endif
         fclose(sh_table_file);
     }
-    static SH_Encode *instance;
 
 public:
+    static SH_Encode *instance;
     static SH_Encode *getInstance()
     {
-        if (instance)
-            return instance;
-        else
+        if (!instance)
             instance = new SH_Encode();
+        return instance;
     }
 
     static Omega_io convert_to_rusinkiewicz(Omega_io wiwo)
@@ -87,14 +87,14 @@ public:
         float hx = x1 + x2;
         float hy = y1 + y2;
         float hz = z1 + z2;
-        float norm_h = sqrt(hx * hx + hy * hy + hz * hz);
+        float norm_h = sqrt(hx * hx + hy * hy + hz * hz + 0.00001f);
         hx /= norm_h;
         hy /= norm_h;
         hz /= norm_h;
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi;
+            theta_h += 2 * pi - 0.00001;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -120,11 +120,12 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-
+        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
+        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
         if (theta_d < 0)
-            theta_d += 2 * pi;
+            theta_d += 2 * pi - 0.00001;
 
 #ifdef SH_DEBUG
         assert(theta_h >= 0 && theta_h <= 2 * pi);
@@ -142,14 +143,14 @@ public:
         float hx = x1 + x2;
         float hy = y1 + y2;
         float hz = z1 + z2;
-        float norm_h = sqrt(hx * hx + hy * hy + hz * hz);
+        float norm_h = sqrt(hx * hx + hy * hy + hz * hz + 0.00001f);
         hx /= norm_h;
         hy /= norm_h;
         hz /= norm_h;
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi;
+            theta_h += 2 * pi - 0.00001;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -175,11 +176,13 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
+        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
+        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
 
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
         if (theta_d < 0)
-            theta_d += 2 * pi;
+            theta_d += 2 * pi - 0.00001;
 
 #ifdef SH_DEBUG
         assert(theta_h >= 0 && theta_h <= 2 * pi);
@@ -197,14 +200,14 @@ public:
         float hx = x1 + x2;
         float hy = y1 + y2;
         float hz = z1 + z2;
-        float norm_h = sqrt(hx * hx + hy * hy + hz * hz);
+        float norm_h = sqrt(hx * hx + hy * hy + hz * hz + 0.00001f);
         hx /= norm_h;
         hy /= norm_h;
         hz /= norm_h;
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi;
+            theta_h += 2 * pi - 0.00001;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -244,8 +247,8 @@ public:
     template <int dim>
     SH_basis<dim> eval_sh_basis(float theta, float phi)
     {
-        int idx_theta = SH_SAMPLE_RATE * theta / (2 * pi);
-        int idx_phi = SH_SAMPLE_RATE * theta / pi;
+        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
+        int idx_phi = floor(SH_SAMPLE_RATE * theta / pi);
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
@@ -255,9 +258,9 @@ public:
         float phi = acos(z);
         float theta = atan2(y, x);
         if (theta < 0)
-            theta += 2 * pi;
-        int idx_theta = SH_SAMPLE_RATE * theta / (2 * pi);
-        int idx_phi = SH_SAMPLE_RATE * theta / pi;
+            theta += 2 * pi - 0.00001;
+        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
+        int idx_phi = floor(SH_SAMPLE_RATE * theta / pi);
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
@@ -265,5 +268,5 @@ public:
 private:
     SH_basis<SH_DIMS> sh_table[SH_TABLE_SIZE];
 };
-
+SH_Encode *SH_Encode::instance = nullptr;
 #endif /* __SH_ENCODE_H_ */
