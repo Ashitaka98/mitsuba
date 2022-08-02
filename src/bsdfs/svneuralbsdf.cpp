@@ -59,6 +59,7 @@ public:
         {
             fscanf(model_file, "%f", &weights[i]);
         }
+        fclose(model_file);
         if (m_flag_isSVBSDF)
         {
             m_svbrdf_r.resize(m_textureWidth * m_textureHeight);
@@ -71,37 +72,40 @@ public:
             {
                 for (int j = 0; j < m_textureWidth; j++)
                 {
-                    for (int i = 0; i < BRDFNet::num_injected; i++)
+                    for (int k = 0; k < BRDFNet::num_injected; k++)
                     {
-                        fscanf(injectedUnits_file, "%f", &injected_units[i]);
+                        fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
                     m_svbrdf_r[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
                 }
             }
+            fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_injectedUnitsTexturePath_g.c_str(), "r");
             for (int i = 0; i < m_textureHeight; i++)
             {
                 for (int j = 0; j < m_textureWidth; j++)
                 {
-                    for (int i = 0; i < BRDFNet::num_injected; i++)
+                    for (int k = 0; k < BRDFNet::num_injected; k++)
                     {
-                        fscanf(injectedUnits_file, "%f", &injected_units[i]);
+                        fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
                     m_svbrdf_g[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
                 }
             }
+            fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_injectedUnitsTexturePath_b.c_str(), "r");
             for (int i = 0; i < m_textureHeight; i++)
             {
                 for (int j = 0; j < m_textureWidth; j++)
                 {
-                    for (int i = 0; i < BRDFNet::num_injected; i++)
+                    for (int k = 0; k < BRDFNet::num_injected; k++)
                     {
-                        fscanf(injectedUnits_file, "%f", &injected_units[i]);
+                        fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
                     m_svbrdf_b[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
                 }
             }
+            fclose(injectedUnits_file);
         }
         else
         {
@@ -113,18 +117,21 @@ public:
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
             m_brdf_r = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
+            fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_injectedUnitsPath_g.c_str(), "r");
             for (int i = 0; i < BRDFNet::num_injected; i++)
             {
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
             m_brdf_g = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
+            fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_injectedUnitsPath_b.c_str(), "r");
             for (int i = 0; i < BRDFNet::num_injected; i++)
             {
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
             m_brdf_b = std::unique_ptr<BRDFNet>(new BRDFNet(weights, injected_units));
+            fclose(injectedUnits_file);
         }
 
         Log(EInfo, "SVNeuralBSDF configured");
@@ -158,7 +165,10 @@ public:
         memcpy(&inputs[6 + SH_DIMS], sh_o.sh, sizeof(float) * SH_DIMS);
         if (m_flag_isSVBSDF)
         {
-            float x = static_cast<int>(bRec.its.uv.x * m_textureWidth), y = static_cast<int>(bRec.its.uv.y * m_textureHeight);
+            int x = math::roundToInt(bRec.its.uv.x * m_textureWidth - 0.5), y = math::roundToInt(bRec.its.uv.y * m_textureHeight - 0.5);
+            x = math::clamp(x, 0, m_textureWidth);
+            y = math::clamp(y, 0, m_textureHeight - 1);
+
             int texel = m_textureWidth * y + x;
             m_svbrdf_r[texel]->feedforward(inputs, &pred[0]);
             m_svbrdf_g[texel]->feedforward(inputs, &pred[1]);
