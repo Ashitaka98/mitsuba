@@ -40,6 +40,7 @@ public:
         m_components.push_back(EDiffuseReflection | EFrontSide);
         float weights[BRDFNet::num_weights];
         FILE *model_file = fopen(m_modelpath.c_str(), "r");
+        assert(model_file);
         Log(EInfo, "MLP weights number: %d", BRDFNet::num_weights);
         for (int i = 0; i < BRDFNet::num_weights; i++)
         {

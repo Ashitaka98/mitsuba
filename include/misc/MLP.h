@@ -65,9 +65,6 @@ template <int input_dim, int dim0, int... args>
 class MLP
 {
 public:
-    MLP() : _layer0()
-    {
-    }
     MLP(float *buffer) : _layer0(buffer), _rest(buffer + input_dim * dim0 + dim0)
     {
     }
@@ -107,9 +104,6 @@ template <int input_dim0, int dim0, int input_dim1, int... args>
 class injected_MLP
 {
 public:
-    injected_MLP() : _layer0()
-    {
-    }
     injected_MLP(float *weights, float *injected_units) : _layer0(weights), _rest(weights + input_dim0 * dim0 + dim0, injected_units + input_dim1 - dim0)
     {
         memcpy(injected, injected_units, sizeof(float) * (input_dim1 - dim0));
