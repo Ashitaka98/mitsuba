@@ -5,7 +5,8 @@ DISTDIR = '#dist'
 CXX = 'g++'
 CC = 'gcc'
 CXXFLAGS = [
-    '-std=gnu++11', '-O3', '-Wall', '-g', '-pipe', '-march=nocona', '-msse2',
+    '-std=gnu++14', '-O3', '-Wall', '-g', '-pipe', '-march=nocona', '-msse2',
+    '-mavx512bw', '-mavx512vl', '-mavx512f', '-mavx512cd', '-mavx512dq',
     '-ftree-vectorize', '-mfpmath=sse', '-funsafe-math-optimizations',
     '-fno-rounding-math', '-fno-signaling-nans', '-fno-math-errno',
     '-fomit-frame-pointer', '-DMTS_DEBUG', '-DSINGLE_PRECISION',

@@ -134,7 +134,9 @@ public:
                     {
                         fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
-                    m_svbrdf_r[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+                    auto p1 = aligned_alloc(64, sizeof(BRDFNet));
+                    auto p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+                    m_svbrdf_r[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p2);
                 }
             }
             fclose(injectedUnits_file);
@@ -148,7 +150,9 @@ public:
                     {
                         fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
-                    m_svbrdf_g[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+                    auto p1 = aligned_alloc(64, sizeof(BRDFNet));
+                    auto p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+                    m_svbrdf_g[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p2);
                 }
             }
             fclose(injectedUnits_file);
@@ -162,7 +166,9 @@ public:
                     {
                         fscanf(injectedUnits_file, "%f", &injected_units[k]);
                     }
-                    m_svbrdf_b[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+                    auto p1 = aligned_alloc(64, sizeof(BRDFNet));
+                    auto p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+                    m_svbrdf_b[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p2);
                 }
             }
             fclose(injectedUnits_file);
@@ -180,7 +186,9 @@ public:
                         {
                             fscanf(injectedUnits_file, "%f", &injected_units[k]);
                         }
-                        m_svbtdf_r[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                        auto p1 = aligned_alloc(64, sizeof(BTDFNet));
+                        auto p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                        m_svbtdf_r[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p2);
                     }
                 }
                 fclose(injectedUnits_file);
@@ -194,7 +202,9 @@ public:
                         {
                             fscanf(injectedUnits_file, "%f", &injected_units[k]);
                         }
-                        m_svbtdf_g[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                        auto p1 = aligned_alloc(64, sizeof(BTDFNet));
+                        auto p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                        m_svbtdf_g[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p2);
                     }
                 }
                 fclose(injectedUnits_file);
@@ -208,7 +218,9 @@ public:
                         {
                             fscanf(injectedUnits_file, "%f", &injected_units[k]);
                         }
-                        m_svbtdf_b[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                        auto p1 = aligned_alloc(64, sizeof(BTDFNet));
+                        auto p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                        m_svbtdf_b[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p2);
                     }
                 }
                 fclose(injectedUnits_file);
@@ -236,7 +248,9 @@ public:
             {
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
-            m_brdf_r = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+            auto p1 = aligned_alloc(64, sizeof(BRDFNet));
+            auto p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+            m_brdf_r = std::unique_ptr<BRDFNet>(p2);
             fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_BRDFDeltaPath_g.c_str(), "r");
             assert(injectedUnits_file);
@@ -244,7 +258,9 @@ public:
             {
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
-            m_brdf_g = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+            p1 = aligned_alloc(64, sizeof(BRDFNet));
+            p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+            m_brdf_g = std::unique_ptr<BRDFNet>(p2);
             fclose(injectedUnits_file);
             injectedUnits_file = fopen(m_BRDFDeltaPath_b.c_str(), "r");
             assert(injectedUnits_file);
@@ -252,7 +268,9 @@ public:
             {
                 fscanf(injectedUnits_file, "%f", &injected_units[i]);
             }
-            m_brdf_b = std::unique_ptr<BRDFNet>(new BRDFNet(BRDFWeights, injected_units));
+            p1 = aligned_alloc(64, sizeof(BRDFNet));
+            p2 = new (p1) BRDFNet(BRDFWeights, injected_units);
+            m_brdf_b = std::unique_ptr<BRDFNet>(p2);
             fclose(injectedUnits_file);
             if (m_flag_isBSDF)
             {
@@ -264,7 +282,9 @@ public:
                 {
                     fscanf(injectedUnits_file, "%f", &injected_units[i]);
                 }
-                m_btdf_r = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                auto p1 = aligned_alloc(64, sizeof(BTDFNet));
+                auto p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                m_btdf_r = std::unique_ptr<BTDFNet>(p2);
                 fclose(injectedUnits_file);
                 injectedUnits_file = fopen(m_BTDFDeltaPath_g.c_str(), "r");
                 assert(injectedUnits_file);
@@ -272,7 +292,9 @@ public:
                 {
                     fscanf(injectedUnits_file, "%f", &injected_units[i]);
                 }
-                m_btdf_g = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                p1 = aligned_alloc(64, sizeof(BTDFNet));
+                p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                m_btdf_g = std::unique_ptr<BTDFNet>(p2);
                 fclose(injectedUnits_file);
                 injectedUnits_file = fopen(m_BTDFDeltaPath_b.c_str(), "r");
                 assert(injectedUnits_file);
@@ -280,7 +302,9 @@ public:
                 {
                     fscanf(injectedUnits_file, "%f", &injected_units[i]);
                 }
-                m_btdf_b = std::unique_ptr<BTDFNet>(new BTDFNet(BTDFWeights, injected_units));
+                p1 = aligned_alloc(64, sizeof(BTDFNet));
+                p2 = new (p1) BTDFNet(BTDFWeights, injected_units);
+                m_btdf_b = std::unique_ptr<BTDFNet>(p2);
                 fclose(injectedUnits_file);
             }
             FILE *alphaFile = fopen(m_alphaPath.c_str(), "r");
@@ -320,7 +344,7 @@ public:
             wi = bRec.wi;
             wo = bRec.wo;
         }
-        float inputs[INPUT_DIM];
+        __attribute__((aligned(64))) float inputs[RoundUp(INPUT_DIM, batch_size)];
         float pred[3];
         Omega_io_xyz wiwo{wi.x, wi.y, wi.z, wo.x, wo.y, wo.z};
         Omega_io_xyz whwd;

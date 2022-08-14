@@ -1,15 +1,19 @@
 #pragma once
 #ifndef __MLP_H_
 #define __MLP_H_
-#include <string.h>
+#include <immintrin.h>
 #ifdef MLP_DEBUG
 #include <iostream>
 #endif
+
+#define RoundUp(X, base) (static_cast<int>((X - 1) / base) * base + base)
+
 inline float relu(float x)
 {
     return x > 0 ? x : 0;
 }
 
+const int batch_size = sizeof(__m512) / sizeof(float); // 16
 template <int input_dim, int output_dim>
 class Layer
 {
@@ -19,7 +23,7 @@ public:
         for (int i = 0; i < output_dim; i++)
         {
             _bias[i] = 0;
-            for (int j = 0; j < input_dim; j++)
+            for (int j = 0; j < RoundUp(input_dim, batch_size); j++)
                 _weights[i][j] = 0;
         }
     }
@@ -33,6 +37,8 @@ public:
                 _weights[i][j] = *p;
                 p++;
             }
+            for (int j = input_dim; j < RoundUp(input_dim, batch_size); j++)
+                _weights[i][j] = 0;
         }
         for (int i = 0; i < output_dim; i++)
         {
@@ -40,15 +46,27 @@ public:
             p++;
         }
     }
+    /*
+    inputs must be aligned(64)
+    */
     inline void feedforward(float *inputs, float *outputs) const
     {
+        __m512 v, v1, v2, v3;
+        __attribute__((aligned(64))) float tmp[batch_size];
         for (int i = 0; i < output_dim; i++)
         {
             outputs[i] = _bias[i];
-            for (int j = 0; j < input_dim; j++)
+            v = _mm512_setzero_ps();
+            for (int j = 0; j < input_dim; j += batch_size)
             {
-                outputs[i] += _weights[i][j] * inputs[j];
+                v1 = _mm512_load_ps(&_weights[i][j]);
+                v2 = _mm512_load_ps(&inputs[j]);
+                v3 = _mm512_mul_ps(v1, v2);
+                v = _mm512_add_ps(v, v3);
             }
+            _mm512_store_ps(tmp, v);
+            for (int j = 0; j < batch_size; j++)
+                outputs[i] += tmp[j];
             outputs[i] = relu(outputs[i]);
         }
 #ifdef MLP_DEBUG
@@ -57,7 +75,7 @@ public:
         std::cout << std::endl;
 #endif
     }
-    float _weights[output_dim][input_dim];
+    __attribute__((aligned(64))) float _weights[output_dim][RoundUp(input_dim, batch_size)];
     float _bias[output_dim];
 };
 
@@ -73,7 +91,7 @@ public:
     */
     inline void feedforward(float *inputs, float *outputs) const
     {
-        float buf[dim0];
+        __attribute__((aligned(64))) float buf[RoundUp(dim0, batch_size)];
         _layer0.feedforward(inputs, buf);
         _rest.feedforward(buf, outputs);
     }
@@ -92,6 +110,9 @@ public:
     MLP(float *buffer) : _layer(buffer)
     {
     }
+    /*
+        feedforward should be thread-safe
+    */
     inline void feedforward(float *inputs, float *outputs) const
     {
         _layer.feedforward(inputs, outputs);
@@ -108,9 +129,12 @@ public:
     {
         memcpy(injected, injected_units, sizeof(float) * (input_dim1 - dim0));
     }
+    /*
+        feedforward should be thread-safe
+    */
     inline void feedforward(float *inputs, float *outputs) const
     {
-        float buf[input_dim1];
+        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
         _layer0.feedforward(inputs, buf);
         memcpy(&buf[dim0], injected, sizeof(float) * (input_dim1 - dim0));
         _rest.feedforward(buf, outputs);
@@ -135,7 +159,7 @@ public:
     }
     inline void feedforward(float *inputs, float *outputs) const
     {
-        float buf[input_dim1];
+        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
         _layer0.feedforward(inputs, buf);
         memcpy(&buf[dim0], injected, sizeof(float) * (input_dim1 - dim0));
         _layer1.feedforward(buf, outputs);
