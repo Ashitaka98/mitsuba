@@ -379,7 +379,7 @@ public:
             bRec.wo = warp::squareToUniformHemisphere(sample);
             pdf = warp::squareToUniformHemispherePdf();
         }
-        return eval(bRec);
+        return eval(bRec) / pdf;
     }
     Float pdf(const BSDFSamplingRecord &bRec,
               EMeasure measure = ESolidAngle) const override
