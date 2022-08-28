@@ -335,6 +335,11 @@ public:
         }
         else
         {
+
+            wiwo.xyz[2] = wiwo.xyz[2] < -0.9999f ? -0.9999f : wiwo.xyz[2];
+            wiwo.xyz[2] = wiwo.xyz[2] > 0.9999f ? 0.9999f : wiwo.xyz[2];
+            wiwo.xyz[5] = wiwo.xyz[5] < -0.9999f ? -0.9999f : wiwo.xyz[5];
+            wiwo.xyz[5] = wiwo.xyz[5] > 0.9999f ? 0.9999f : wiwo.xyz[5];
             sh_i = sh_encode->eval_sh_basis<SH_DIMS>(wiwo.xyz[0], wiwo.xyz[1], wiwo.xyz[2]);
             sh_o = sh_encode->eval_sh_basis<SH_DIMS>(wiwo.xyz[3], wiwo.xyz[4], wiwo.xyz[5]);
             memcpy(inputs, wiwo.xyz, sizeof(float) * 6);

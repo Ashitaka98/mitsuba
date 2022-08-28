@@ -94,7 +94,7 @@ public:
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi - 0.00001;
+            theta_h += 2 * pi - 0.00001f;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -120,12 +120,12 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
-        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
+        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
+        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
         if (theta_d < 0)
-            theta_d += 2 * pi - 0.00001;
+            theta_d += 2 * pi - 0.00001f;
 
 #ifdef SH_DEBUG
         assert(theta_h >= 0 && theta_h <= 2 * pi);
@@ -150,7 +150,7 @@ public:
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi - 0.00001;
+            theta_h += 2 * pi - 0.00001f;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -176,13 +176,13 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
-        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
+        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
+        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
 
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
         if (theta_d < 0)
-            theta_d += 2 * pi - 0.00001;
+            theta_d += 2 * pi - 0.00001f;
 
 #ifdef SH_DEBUG
         assert(theta_h >= 0 && theta_h <= 2 * pi);
@@ -207,7 +207,7 @@ public:
         float phi_h = acos(hz);
         float theta_h = atan2(hy, hx);
         if (theta_h < 0)
-            theta_h += 2 * pi - 0.00001;
+            theta_h += 2 * pi - 0.00001f;
 
         float wi[3] = {x1, y1, z1};
         double rot_z[3][3] = {
@@ -233,8 +233,8 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999 ? -0.9999 : d[2];
-        d[2] = d[2] > 0.9999 ? 0.9999 : d[2];
+        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
+        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
         Omega_io_xyz whwd;
         whwd.xyz[0] = hx;
         whwd.xyz[1] = hy;
@@ -248,8 +248,8 @@ public:
     template <int dim>
     SH_basis<dim> eval_sh_basis(float theta, float phi)
     {
-        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
-        int idx_phi = floor(SH_SAMPLE_RATE * phi / pi);
+        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi + 0.00001f));
+        int idx_phi = floor(SH_SAMPLE_RATE * phi / (pi + 0.00001f));
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
@@ -259,9 +259,9 @@ public:
         float phi = acos(z);
         float theta = atan2(y, x);
         if (theta < 0)
-            theta += 2 * pi - 0.00001;
-        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi));
-        int idx_phi = floor(SH_SAMPLE_RATE * phi / pi);
+            theta += 2 * pi - 0.00001f;
+        int idx_theta = floor(SH_SAMPLE_RATE * theta / (2 * pi + 0.00001f));
+        int idx_phi = floor(SH_SAMPLE_RATE * phi / (pi + 0.00001f));
         int idx = idx_theta * SH_SAMPLE_RATE + idx_phi;
         return cast_sh_basis<dim, SH_DIMS>(sh_table[idx]);
     }
