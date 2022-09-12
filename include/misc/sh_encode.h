@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cassert>
+#include <iostream>
 
 #define SH_SAMPLE_RATE 1000
 #define SH_TABLE_SIZE (SH_SAMPLE_RATE * SH_SAMPLE_RATE)
@@ -44,23 +45,16 @@ class SH_Encode
 private:
     SH_Encode()
     {
-        FILE *sh_table_file = fopen("/home/lzr/Projects/mitsuba/data/sh_table/sh_table.txt", "r");
+        auto start = time(nullptr);
+        FILE *sh_table_file = fopen("/home/lzr/Projects/mitsuba/data/sh_table/sh_table_binary", "r");
         assert(sh_table_file);
         for (int i = 0; i < SH_TABLE_SIZE; i++)
         {
-            for (int j = 0; j < SH_DIMS; j++)
-            {
-                int test = fscanf(sh_table_file, "%f", &sh_table[i].sh[j]);
-#ifdef SH_DEBUG
-                assert(test != EOF);
-#endif
-            }
+            assert(fread(sh_table[i].sh, sizeof(float) * SH_DIMS, 1, sh_table_file) == 1);
         }
-#ifdef SH_DEBUG
-        float test;
-        assert(fscanf(sh_table_file, "%f", &test) == EOF);
-#endif
         fclose(sh_table_file);
+        auto end = time(nullptr);
+        std::cout << "loading spherical harmonics table costs " << difftime(end, start) << "s\n";
     }
 
 public:
