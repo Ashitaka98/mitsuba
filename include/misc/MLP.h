@@ -2,6 +2,7 @@
 #ifndef __MLP_H_
 #define __MLP_H_
 #include <immintrin.h>
+#include <string.h>
 #ifdef MLP_DEBUG
 #include <iostream>
 #endif
@@ -121,6 +122,7 @@ public:
     Layer<input_dim, output_dim> _layer;
 };
 
+// injected_MLP<168, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 192, 224, 1>;
 template <int input_dim0, int dim0, int input_dim1, int... args>
 class injected_MLP
 {
@@ -170,4 +172,112 @@ public:
     static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
     static const int num_injected = input_dim1 - dim0;
 };
+
+// injected_MLP_v2<168,32,0,0,64,31,32,1,64,31,32,1,32,0,32,1>
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
+class injected_MLP_v2
+{
+public:
+    injected_MLP_v2(float *weights, float *injected_units, float *injected_weights) : _layer0(weights), _rest(weights + input_dim0 * dim0 + dim0, injected_units + input_dim1 - dim0 - dim0v2, injected_weights + input_dim0v2 * dim0v2 + dim0v2)
+    {
+        // static_assert(input_dim1 >= dim0 + dim0v2);
+        // static_assert(input_dim1v2 == dim0 + dim0v2);
+        if (input_dim1 - dim0 - dim0v2 > 0)
+            memcpy(_injected, injected_units, sizeof(float) * (input_dim1 - dim0 - dim0v2));
+        if (dim0v2 > 0)
+        {
+            memcpy(_injected_weights, injected_weights, sizeof(float) * input_dim0v2 * dim0v2);
+            memcpy(_injected_bias, injected_weights + input_dim0v2 * dim0v2, sizeof(float) * dim0v2);
+        }
+    }
+    /*
+        feedforward should be thread-safe
+    */
+    inline void feedforward(float *inputs, float *outputs) const
+    {
+        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
+        for (int i = 0; i < dim0v2; i++)
+        {
+            buf[i] = _injected_bias[i];
+            for (int j = 0; j < input_dim0v2; j++)
+            {
+                buf[i] += _injected_weights[i][j] * inputs[j];
+            }
+        }
+        if (dim0 > 0)
+            _layer0.feedforward(inputs, &buf[dim0v2]);
+        if (input_dim1 - dim0 - dim0v2 > 0)
+            memcpy(&buf[dim0v2 + dim0], _injected, sizeof(float) * (input_dim1 - dim0 - dim0v2));
+        _rest.feedforward(buf, outputs);
+    }
+    Layer<input_dim0, dim0> _layer0;
+
+    float _injected[input_dim1 - dim0 - dim0v2];
+    float _injected_weights[dim0v2][input_dim0v2];
+    float _injected_bias[dim0v2];
+
+    injected_MLP_v2<input_dim1, dim1, input_dim1v2, args...> _rest;
+    static const int num_weights = input_dim0 * dim0 + dim0 + decltype(_rest)::num_weights;
+    static const int num_injected_weights = input_dim0v2 * dim0v2 + dim0v2 + decltype(_rest)::num_injected_weights;
+    static const int num_injected = input_dim1 - dim0 - dim0v2 + decltype(_rest)::num_injected;
+};
+
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
+class injected_MLP_v2<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
+{
+public:
+    injected_MLP_v2(float *weights, float *injected_units, float *injected_weights) : _layer0(weights), _layer1(weights + input_dim0 * dim0 + dim0)
+    {
+        // static_assert(input_dim1v2 == dim0 + dim0v2);
+        // static_assert(input_dim1 >= dim0 + dim0v2);
+        if (input_dim1 - dim0 - dim0v2 > 0)
+            memcpy(_injected, injected_units, sizeof(float) * (input_dim1 - dim0 - dim0v2));
+        if (dim0v2 > 0)
+        {
+            memcpy(_injected_weights, injected_weights, sizeof(float) * input_dim0v2 * dim0v2);
+            memcpy(_injected_bias, injected_weights + input_dim0v2 * dim0v2, sizeof(float) * dim0v2);
+            memcpy(_injected_weights2, injected_weights + input_dim0v2 * dim0v2 + dim0v2, sizeof(float) * input_dim1v2 * dim1v2);
+            memcpy(_injected_bias2, injected_weights + input_dim0v2 * dim0v2 + dim0v2 + input_dim1v2 * dim1v2, sizeof(float) * dim1v2);
+        }
+    }
+    inline void feedforward(float *inputs, float *outputs) const
+    {
+        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
+        for (int i = 0; i < dim0v2; i++)
+        {
+            buf[i] = _injected_bias[i];
+            for (int j = 0; j < input_dim0v2; j++)
+            {
+                buf[i] += _injected_weights[i][j] * inputs[j];
+            }
+        }
+        if (dim0 > 0)
+            _layer0.feedforward(inputs, &buf[dim0v2]);
+        if (input_dim1 - dim0 - dim0v2 > 0)
+            memcpy(&buf[dim0v2 + dim0], _injected, sizeof(float) * (input_dim1 - dim0 - dim0v2));
+        for (int i = 0; i < dim1v2; i++)
+        {
+            outputs[i] = _injected_bias2[i];
+            for (int j = 0; j < input_dim1v2; j++)
+            {
+                outputs[i] += _injected_weights2[i][j] * buf[j];
+            }
+        }
+        if (dim1 > 0)
+            _layer1.feedforward(buf, &outputs[dim1v2]);
+    }
+    Layer<input_dim0, dim0> _layer0;
+    float _injected[input_dim1 - dim0 - dim0v2];
+    float _injected_weights[dim0v2][input_dim0v2];
+    float _injected_bias[dim0v2];
+    Layer<input_dim1, dim1> _layer1;
+
+    float _injected_weights2[dim1v2][input_dim1v2];
+    float _injected_bias2[dim1v2];
+
+    static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
+    static const int num_injected_weights = input_dim0v2 * dim0v2 + dim0v2 + input_dim1v2 * dim1v2 + dim1v2;
+    static const int num_injected = input_dim1 - dim0 - dim0v2;
+};
+
 #endif /* __MLP_H_ */
