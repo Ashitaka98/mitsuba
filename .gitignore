@@ -53,5 +53,9 @@ mitsuba.*.log
 # scene
 scenes/*
 
+# sh table
+
+data/sh_table
+
 # .vscode
 .vscode

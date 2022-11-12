@@ -21,27 +21,27 @@ class SVNBRDF_Caller:
                 'type':
                 'svneuralbsdf',
                 'BRDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/weights.txt',
-                'BTDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/weights.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/weights.txt',
                 'isSV':
                 False,
                 'isBSDF':
-                True,
+                False,
                 'useWhWd':
                 True,
                 'BRDFDeltaPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_r.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_r.txt',
                 'BRDFDeltaPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_g.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_g.txt',
                 'BRDFDeltaPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_b.txt',
-                'BTDFDeltaPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_r.txt',
-                'BTDFDeltaPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_g.txt',
-                'BTDFDeltaPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_b.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_b.txt',
+                'BRDFPredWeightsPath_r':
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_r.txt',
+                'BRDFPredWeightsPath_g':
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_g.txt',
+                'BRDFPredWeightsPath_b':
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_b.txt',
+                'AlphaPath':
+                '/home/lzr/layeredBsdfData/meta_texture/1030002/alpha.txt'
             })
         else:
             self.layered = self.pmgr.create({
@@ -108,8 +108,7 @@ class SVNBRDF_Caller:
 if __name__ == '__main__':
     caller = SVNBRDF_Caller(isSV=False)
 
-    caller.eval(1.0, 0.9, 5, 2.5)
-    caller.eval(1.0, 0.9, 5, 0.2)
+    caller.eval(1.0, 0.9, 0.8, 0.7)
 
     # caller2 = SVNBRDF_Caller(isSV=True, txwidth=9, txheight=5)
 

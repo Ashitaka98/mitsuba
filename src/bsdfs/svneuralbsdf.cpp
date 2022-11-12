@@ -22,8 +22,8 @@ class SVNeuralBSDF : public BSDF
 
     // using BRDFNet = injected_MLP<INPUT_DIM, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 192, 224, 1>;
     // using BTDFNet = injected_MLP<INPUT_DIM, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 192, 224, 1>;
-    using BRDFNet = injected_MLP_v2<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 0, 32, 1>;
-    using BTDFNet = injected_MLP_v2<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 0, 32, 1>;
+    using BRDFNet = injected_MLP_v2<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
+    using BTDFNet = injected_MLP_v2<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
 
 public:
     SVNeuralBSDF(const Properties &props) : BSDF(props)
@@ -528,7 +528,8 @@ public:
         inverse_miu_law_compression(MIU, pred, 3);
         // std::cout << pred[0] << " " << pred[1] << " " << pred[2] << "\n";
         // std::cout << wo.z << " " << abs(bRec.wo.z) << " " << Frame::cosTheta(bRec.wo) << " " << abs(Frame::cosTheta(bRec.wo)) << "\n";
-        return Spectrum(pred) * Frame::cosTheta(bRec.wo);
+        // return Spectrum(pred) * Frame::cosTheta(bRec.wo);
+        return Spectrum(pred);
     }
     Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &_sample) const override
     {
