@@ -21,7 +21,7 @@ class SVNBRDF_Caller:
                 'type':
                 'svneuralbsdf',
                 'BRDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/weights.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/weights',
                 'isSV':
                 False,
                 'isBSDF':
@@ -29,42 +29,42 @@ class SVNBRDF_Caller:
                 'useWhWd':
                 True,
                 'BRDFDeltaPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_r.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_r',
                 'BRDFDeltaPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_g.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_g',
                 'BRDFDeltaPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/delta_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_b.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_b',
                 'BRDFPredWeightsPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_r.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_r',
                 'BRDFPredWeightsPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_g.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_g',
                 'BRDFPredWeightsPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/predWeights_0.1_0_0_1.2_0_0.8_0.8_0.8_0_0.1_0_0_Al_b.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_b',
                 'AlphaPath':
-                '/home/lzr/layeredBsdfData/meta_texture/1030002/alpha.txt'
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/alpha.txt'
             })
         else:
             self.layered = self.pmgr.create({
                 'type': 'svneuralbsdf',
                 'BRDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/weights.txt',
-                'BTDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/weights.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/weights',
                 'isSV': True,
-                'isBSDF': True,
+                'isBSDF': False,
                 'useWhWd': True,
                 'BRDFDeltaTexturePath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_r.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_r',
                 'BRDFDeltaTexturePath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_g.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_g',
                 'BRDFDeltaTexturePath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/0721001-3/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_b.txt',
-                'BTDFDeltaTexturePath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_r.txt',
-                'BTDFDeltaTexturePath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_g.txt',
-                'BTDFDeltaTexturePath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/0809001-epoch133/delta_0.11_0_0_1.08_0_0.89_0.98_0.98_0_0.5_0_0_1.2_b.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_b',
+                'BRDFPredWeightsTexturePath_r':
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_r',
+                'BRDFPredWeightsTexturePath_g':
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_g',
+                'BRDFPredWeightsTexturePath_b':
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_b',
+                'AlphaTexturePath':
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svalpha.txt',
                 'textureWidth': self.txwidth,
                 'textureHeight': self.txheight
             })
@@ -89,15 +89,13 @@ class SVNBRDF_Caller:
         bRec.wo = wo
         if self.isSV:
             print(x, y, self.txwidth, (x + 0.5) / self.txwidth)
-            # bRec.its.uv.x = (x + 0.5) / self.txwidth
-            # bRec.its.uv.y = (y + 0.5) / self.txheight
+            bRec.its.uv.x = (x + 0.5) / self.txwidth
+            bRec.its.uv.y = (y + 0.5) / self.txheight
             bRec.its.uv = Point2((x + 0.5) / self.txwidth,
                                  (y + 0.5) / self.txheight)
             print(bRec.its.uv.x, bRec.its.uv.y)
 
         ret = self.layered.eval(bRec, EMeasure.ESolidAngle)
-        if wo_z != 0:
-            ret /= abs(wo_z)
         SVNBRDF_Caller.Log(
             'Sampling theta_i:{:.2f} phi_i:{:.2f} theta_o:{:.2f}, phi_o:{:.2f} -> BSDF: [{:.8f}, {:.8f}, {:.8f}]'
             .format(theta_i, phi_i, theta_o, phi_o, ret[0], ret[1], ret[2]))
@@ -108,8 +106,8 @@ class SVNBRDF_Caller:
 if __name__ == '__main__':
     caller = SVNBRDF_Caller(isSV=False)
 
-    caller.eval(1.0, 0.9, 0.8, 0.7)
+    # caller.eval(0, 19, 0.8, 0.8)
 
-    # caller2 = SVNBRDF_Caller(isSV=True, txwidth=9, txheight=5)
+    caller2 = SVNBRDF_Caller(isSV=True, txwidth=256, txheight=128)
 
-    # caller2.eval(1.0, 0.9, 0.8, 0.7, x=5, y=3)
+    caller2.eval(1.0, 0.9, 0.8, 0.7, x=5, y=3)

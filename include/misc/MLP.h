@@ -30,6 +30,11 @@ public:
     }
     Layer(float *buffer)
     {
+        set(buffer);
+    }
+
+    void set(float *buffer)
+    {
         float *p = buffer;
         for (int i = 0; i < output_dim; i++)
         {
@@ -47,6 +52,7 @@ public:
             p++;
         }
     }
+
     /*
     inputs must be aligned(64)
     */
@@ -80,105 +86,12 @@ public:
     float _bias[output_dim];
 };
 
-template <int input_dim, int dim0, int... args>
-class MLP
-{
-public:
-    MLP(float *buffer) : _layer0(buffer), _rest(buffer + input_dim * dim0 + dim0)
-    {
-    }
-    /*
-        feedforward should be thread-safe
-    */
-    inline void feedforward(float *inputs, float *outputs) const
-    {
-        __attribute__((aligned(64))) float buf[RoundUp(dim0, batch_size)];
-        _layer0.feedforward(inputs, buf);
-        _rest.feedforward(buf, outputs);
-    }
-    Layer<input_dim, dim0> _layer0;
-    MLP<dim0, args...> _rest;
-    static const int num_weights = input_dim * dim0 + dim0 + decltype(_rest)::num_weights;
-};
-
-template <int input_dim, int output_dim>
-class MLP<input_dim, output_dim>
-{
-public:
-    MLP() : _layer()
-    {
-    }
-    MLP(float *buffer) : _layer(buffer)
-    {
-    }
-    /*
-        feedforward should be thread-safe
-    */
-    inline void feedforward(float *inputs, float *outputs) const
-    {
-        _layer.feedforward(inputs, outputs);
-    }
-    static const int num_weights = input_dim * output_dim + output_dim;
-    Layer<input_dim, output_dim> _layer;
-};
-
-// injected_MLP<168, 32, 64, 64, 96, 96, 128, 128, 160, 160, 192, 192, 224, 1>;
-template <int input_dim0, int dim0, int input_dim1, int... args>
-class injected_MLP
-{
-public:
-    injected_MLP(float *weights, float *injected_units) : _layer0(weights), _rest(weights + input_dim0 * dim0 + dim0, injected_units + input_dim1 - dim0)
-    {
-        memcpy(injected, injected_units, sizeof(float) * (input_dim1 - dim0));
-    }
-    /*
-        feedforward should be thread-safe
-    */
-    inline void feedforward(float *inputs, float *outputs) const
-    {
-        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
-        _layer0.feedforward(inputs, buf);
-        memcpy(&buf[dim0], injected, sizeof(float) * (input_dim1 - dim0));
-        _rest.feedforward(buf, outputs);
-    }
-    Layer<input_dim0, dim0> _layer0;
-    float injected[input_dim1 - dim0];
-    injected_MLP<input_dim1, args...> _rest;
-    static const int num_weights = input_dim0 * dim0 + dim0 + decltype(_rest)::num_weights;
-    static const int num_injected = input_dim1 - dim0 + decltype(_rest)::num_injected;
-};
-
-template <int input_dim0, int dim0, int input_dim1, int dim1>
-class injected_MLP<input_dim0, dim0, input_dim1, dim1>
-{
-public:
-    injected_MLP() : _layer0()
-    {
-    }
-    injected_MLP(float *weights, float *injected_units) : _layer0(weights), _layer1(weights + input_dim0 * dim0 + dim0)
-    {
-        memcpy(injected, injected_units, sizeof(float) * (input_dim1 - dim0));
-    }
-    inline void feedforward(float *inputs, float *outputs) const
-    {
-        __attribute__((aligned(64))) float buf[RoundUp(input_dim1, batch_size)];
-        _layer0.feedforward(inputs, buf);
-        memcpy(&buf[dim0], injected, sizeof(float) * (input_dim1 - dim0));
-        _layer1.feedforward(buf, outputs);
-    }
-    Layer<input_dim0, dim0> _layer0;
-    float injected[input_dim1 - dim0];
-    Layer<input_dim1, dim1> _layer1;
-    static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
-    static const int num_injected = input_dim1 - dim0;
-};
-
-// injected_MLP_v2<168,32,0,0,64,31,32,1,64,31,32,1,32,0,32,1>
+// BSDFNet<168,32,0,0,64,31,32,1,64,31,32,1,32,0,32,1>
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
-class injected_MLP_v2
+class BSDFNet
 {
 public:
-    injected_MLP_v2(float *weights, float *injected_units, float *injected_weights) : _layer0(weights), _rest(weights + input_dim0 * dim0 + dim0, injected_units + input_dim1 - dim0 - dim0v2, injected_weights + input_dim0v2 * dim0v2 + dim0v2)
+    BSDFNet(float *injected_units, float *injected_weights) : _rest(injected_units + input_dim1 - dim0 - dim0v2, injected_weights + input_dim0v2 * dim0v2 + dim0v2)
     {
         // static_assert(input_dim1 >= dim0 + dim0v2);
         // static_assert(input_dim1v2 == dim0 + dim0v2);
@@ -210,23 +123,31 @@ public:
             memcpy(&buf[dim0v2 + dim0], _injected, sizeof(float) * (input_dim1 - dim0 - dim0v2));
         _rest.feedforward(buf, outputs);
     }
-    Layer<input_dim0, dim0> _layer0;
+    static void init(float *weights)
+    {
+        _layer0.set(weights);
+        decltype(_rest)::init(weights + input_dim0 * dim0 + dim0);
+    }
+
+    static Layer<input_dim0, dim0> _layer0;
 
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
     float _injected_bias[dim0v2];
 
-    injected_MLP_v2<input_dim1, dim1, input_dim1v2, args...> _rest;
+    BSDFNet<input_dim1, dim1, input_dim1v2, args...> _rest;
     static const int num_weights = input_dim0 * dim0 + dim0 + decltype(_rest)::num_weights;
     static const int num_injected_weights = input_dim0v2 * dim0v2 + dim0v2 + decltype(_rest)::num_injected_weights;
     static const int num_injected = input_dim1 - dim0 - dim0v2 + decltype(_rest)::num_injected;
 };
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
+Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, args...>::_layer0 = Layer<input_dim0, dim0>();
 
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
-class injected_MLP_v2<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
+class BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
 {
 public:
-    injected_MLP_v2(float *weights, float *injected_units, float *injected_weights) : _layer0(weights), _layer1(weights + input_dim0 * dim0 + dim0)
+    BSDFNet(float *injected_units, float *injected_weights)
     {
         // static_assert(input_dim1v2 == dim0 + dim0v2);
         // static_assert(input_dim1 >= dim0 + dim0v2);
@@ -262,15 +183,23 @@ public:
             {
                 outputs[i] += _injected_weights2[i][j] * buf[j];
             }
+            outputs[i] = relu(outputs[i]); // only output layer need a relu
         }
         if (dim1 > 0)
             _layer1.feedforward(buf, &outputs[dim1v2]);
     }
-    Layer<input_dim0, dim0> _layer0;
+
+    static void init(float *weights)
+    {
+        _layer0.set(weights);
+        _layer1.set(weights + input_dim0 * dim0 + dim0);
+    }
+
+    static Layer<input_dim0, dim0> _layer0;
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
     float _injected_bias[dim0v2];
-    Layer<input_dim1, dim1> _layer1;
+    static Layer<input_dim1, dim1> _layer1;
 
     float _injected_weights2[dim1v2][input_dim1v2];
     float _injected_bias2[dim1v2];
@@ -280,4 +209,8 @@ public:
     static const int num_injected = input_dim1 - dim0 - dim0v2;
 };
 
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
+Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer0 = Layer<input_dim0, dim0>();
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
+Layer<input_dim1, dim1> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer1 = Layer<input_dim1, dim1>();
 #endif /* __MLP_H_ */
