@@ -56,12 +56,13 @@ public:
             m_BRDFPredWeightsPath_g = props.getString("BRDFPredWeightsPath_g");
             m_BRDFPredWeightsPath_b = props.getString("BRDFPredWeightsPath_b");
         }
+        m_eta1 = props.getFloat("eta1");
         if (m_flag_isBSDF)
         {
 
             m_BTDFWeightsPath = props.getString("BTDFWeightsPath");
-            m_eta = props.getFloat("eta");
-            m_invEta = 1 / m_eta;
+            m_eta2 = props.getFloat("eta2");
+            // m_invEta = 1 / m_eta;
             if (m_flag_isSV)
             {
                 m_BTDFDeltaTexturePath_r = props.getString("BTDFDeltaTexturePath_r");
@@ -96,6 +97,7 @@ public:
     }
     void configure() override
     {
+        auto start = time(nullptr);
         m_components.push_back(EGlossyReflection | EFrontSide);
         if (m_flag_isBSDF)
         {
@@ -126,7 +128,8 @@ public:
             m_svbrdf_r.resize(m_textureWidth * m_textureHeight);
             m_svbrdf_g.resize(m_textureWidth * m_textureHeight);
             m_svbrdf_b.resize(m_textureWidth * m_textureHeight);
-            m_svalpha.resize(m_textureWidth * m_textureHeight);
+            m_svalpha1.resize(m_textureWidth * m_textureHeight);
+            m_svalpha2.resize(m_textureWidth * m_textureHeight);
             if (m_flag_isBSDF)
             {
                 m_svbtdf_r.resize(m_textureWidth * m_textureHeight);
@@ -254,9 +257,11 @@ public:
             {
                 for (int j = 0; j < m_textureWidth; j++)
                 {
-                    float alpha;
-                    fscanf(svAlphaFile, "%f", &alpha);
-                    m_svalpha[i * m_textureWidth + j] = alpha;
+                    float alpha1, alpha2;
+                    fscanf(svAlphaFile, "%f", &alpha1);
+                    fscanf(svAlphaFile, "%f", &alpha2);
+                    m_svalpha1[i * m_textureWidth + j] = alpha1;
+                    m_svalpha2[i * m_textureWidth + j] = alpha2;
                 }
             }
             fclose(svAlphaFile);
@@ -354,12 +359,15 @@ public:
             }
             FILE *alphaFile = fopen(m_alphaPath.c_str(), "r");
             assert(alphaFile);
-            fscanf(alphaFile, "%f", &m_alpha);
+            fscanf(alphaFile, "%f", &m_alpha1);
+            fscanf(alphaFile, "%f", &m_alpha2);
             fclose(alphaFile);
         }
 
         Log(EInfo, "SVNeuralBSDF configured");
         BSDF::configure();
+        auto end = time(nullptr);
+        std::cout << "configure costs " << difftime(end, start) << "s\n";
     }
     Spectrum eval(const BSDFSamplingRecord &bRec,
                   EMeasure measure = ESolidAngle) const override
@@ -473,9 +481,10 @@ public:
     Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf,
                     const Point2 &sample) const override
     {
+        assert(bRec.sampler);
         if (!m_flag_isBSDF && Frame::cosTheta(bRec.wi) <= 0)
             return Spectrum(0.0);
-        float g;
+        float g1, g2;
         if (m_flag_isSV)
         {
             int x = math::roundToInt(bRec.its.uv.x * m_textureWidth - 0.5), y = math::roundToInt(bRec.its.uv.y * m_textureHeight - 0.5);
@@ -483,27 +492,33 @@ public:
             y = math::clamp(y, 0, m_textureHeight - 1);
 
             int texel = m_textureWidth * y + x;
-            g = m_svalpha[texel];
+            g1 = m_svalpha1[texel];
+            g2 = m_svalpha2[texel];
         }
         else
         {
-            g = m_alpha;
+            g1 = m_alpha1;
+            g2 = m_alpha2;
         }
         /* Construct the microfacet distribution matching the
            roughness values at the current surface position. */
-        MicrofacetDistribution distr(MicrofacetDistribution::EGGX, g);
+        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, 4 * g1);
+        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, 0.5 * g2);
+        MicrofacetDistribution *distr = &distr1;
+        pdf = 1;
         if (m_flag_isBSDF)
         {
+            Log(EError, "bsdf sample not implemented");
             bool sampleReflection = true;
             /* Sample M, the microfacet normal */
             Float microfacetPDF;
-            const Normal m = distr.sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
+            const Normal m = distr->sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
             if (microfacetPDF == 0)
                 return Spectrum(0.0f);
             pdf = microfacetPDF;
 
             Float cosThetaT;
-            Float F = fresnelDielectricExt(dot(bRec.wi, m), cosThetaT, m_eta);
+            Float F = fresnelDielectricExt(dot(bRec.wi, m), cosThetaT, m_eta1);
 
             if (bRec.sampler->next1D() > F)
             {
@@ -552,13 +567,27 @@ public:
             }
             pdf *= std::abs(dwh_dwo);
         }
-        else
+        else // BRDF (two lobe)
         {
+            // decide which lobe to sample
+            Float cosThetaT;
+            Float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), cosThetaT, m_eta1);
+            if (bRec.sampler->next1D() > F)
+            {
+                // sample distr2
+                distr = &distr2;
+            }
+            else
+            {
+                // sample distr1
+                distr = &distr1;
+            }
             /* Sample M, the microfacet normal */
-            Normal m = distr.sample(bRec.wi, sample, pdf);
-
-            if (pdf == 0)
+            Float microfacetPDF;
+            Normal m = distr->sample(bRec.wi, sample, microfacetPDF);
+            if (microfacetPDF == 0)
                 return Spectrum(0.0f);
+            pdf *= microfacetPDF;
 
             /* Perfect specular reflection based on the microfacet normal */
             bRec.wo = reflect(bRec.wi, m);
@@ -578,9 +607,10 @@ public:
     Float pdf(const BSDFSamplingRecord &bRec,
               EMeasure measure = ESolidAngle) const override
     {
+        assert(bRec.sampler);
         if (!m_flag_isBSDF && (Frame::cosTheta(bRec.wi) <= 0 || Frame::cosTheta(bRec.wo) <= 0))
             return 0.0f;
-        float g;
+        float g1, g2;
         if (m_flag_isSV)
         {
             int x = math::roundToInt(bRec.its.uv.x * m_textureWidth - 0.5), y = math::roundToInt(bRec.its.uv.y * m_textureHeight - 0.5);
@@ -588,17 +618,23 @@ public:
             y = math::clamp(y, 0, m_textureHeight - 1);
 
             int texel = m_textureWidth * y + x;
-            g = m_svalpha[texel];
+            g1 = m_svalpha1[texel];
+            g2 = m_svalpha2[texel];
         }
         else
         {
-            g = m_alpha;
+            g1 = m_alpha1;
+            g2 = m_alpha2;
         }
         /* Construct the microfacet distribution matching the
            roughness values at the current surface position. */
-        MicrofacetDistribution distr(MicrofacetDistribution::EGGX, g);
+        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, 4 * g1);
+        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, 0.5 * g2);
+        MicrofacetDistribution *distr = nullptr;
         if (m_flag_isBSDF)
         {
+
+            Log(EError, "bsdf sample not implemented");
             bool reflect = Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) > 0;
             Vector H;
             Float dwh_dwo;
@@ -636,7 +672,7 @@ public:
             /* Ensure that the half-vector points into the
                same hemisphere as the macrosurface normal */
             H *= math::signum(Frame::cosTheta(H));
-            Float prob = distr.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
+            Float prob = distr->pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
 
             Float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta);
             prob *= reflect ? F : (1 - F);
@@ -645,9 +681,33 @@ public:
         }
         else
         {
+            // float pdf = 1;
+            // // decide which lobe to sample
+            // Float cosThetaT;
+            // Float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), cosThetaT, m_eta1);
+            // if (bRec.sampler->next1D() > F)
+            // {
+            //     // sample distr2
+            //     distr = &distr2;
+            // }
+            // else
+            // {
+            //     // sample distr1
+            //     distr = &distr1;
+            // }
+
+            // /* Calculate the reflection half-vector */
+            // Vector H = normalize(bRec.wo + bRec.wi);
+            // pdf *= distr->eval(H) * distr->smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
+            float pdf, pdf1, pdf2;
+            Float cosThetaT;
+            Float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), cosThetaT, m_eta1);
             /* Calculate the reflection half-vector */
             Vector H = normalize(bRec.wo + bRec.wi);
-            return distr.eval(H) * distr.smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
+            pdf1 = distr1.eval(H) * distr1.smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
+            pdf2 = distr2.eval(H) * distr2.smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
+            pdf = (1 - F) * pdf2 + F * pdf1;
+            return pdf;
         }
     }
     Spectrum getDiffuseReflectance(const Intersection &its) const override
@@ -682,10 +742,11 @@ private:
     std::string m_alphaPath;
     std::string m_alphaTexturePath;
 
-    float m_alpha;
-    std::vector<float> m_svalpha;
+    float m_alpha1, m_alpha2;
+    std::vector<float> m_svalpha1;
+    std::vector<float> m_svalpha2;
 
-    float m_eta;
+    float m_eta1, m_eta2, m_eta;
     float m_invEta;
 
     std::vector<std::unique_ptr<BRDFNet>> m_svbrdf_r, m_svbrdf_g, m_svbrdf_b;

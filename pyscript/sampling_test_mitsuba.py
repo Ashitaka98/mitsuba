@@ -89,11 +89,12 @@ class SVNBRDF_Caller:
         bRec.wo = wo
         if self.isSV:
             print(x, y, self.txwidth, (x + 0.5) / self.txwidth)
-            bRec.its.uv.x = (x + 0.5) / self.txwidth
-            bRec.its.uv.y = (y + 0.5) / self.txheight
+            print(bRec.its.uv)
+            # bRec.its.uv.x = (x + 0.5) / self.txwidth
+            # bRec.its.uv.y = (y + 0.5) / self.txheight
             bRec.its.uv = Point2((x + 0.5) / self.txwidth,
                                  (y + 0.5) / self.txheight)
-            print(bRec.its.uv.x, bRec.its.uv.y)
+            print(bRec.its.uv)
 
         ret = self.layered.eval(bRec, EMeasure.ESolidAngle)
         SVNBRDF_Caller.Log(

@@ -129,7 +129,7 @@ public:
         decltype(_rest)::init(weights + input_dim0 * dim0 + dim0);
     }
 
-    static Layer<input_dim0, dim0> _layer0;
+    static Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
 
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
@@ -141,7 +141,7 @@ public:
     static const int num_injected = input_dim1 - dim0 - dim0v2 + decltype(_rest)::num_injected;
 };
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
-Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, args...>::_layer0 = Layer<input_dim0, dim0>();
+Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, args...>::_layer0 __attribute__((aligned(64))) = Layer<input_dim0, dim0>();
 
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
 class BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
@@ -195,11 +195,11 @@ public:
         _layer1.set(weights + input_dim0 * dim0 + dim0);
     }
 
-    static Layer<input_dim0, dim0> _layer0;
+    static Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
     float _injected_bias[dim0v2];
-    static Layer<input_dim1, dim1> _layer1;
+    static Layer<input_dim1, dim1> _layer1 __attribute__((aligned(64)));
 
     float _injected_weights2[dim1v2][input_dim1v2];
     float _injected_bias2[dim1v2];
@@ -210,7 +210,7 @@ public:
 };
 
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
-Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer0 = Layer<input_dim0, dim0>();
+Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer0 __attribute__((aligned(64))) = Layer<input_dim0, dim0>();
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
-Layer<input_dim1, dim1> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer1 = Layer<input_dim1, dim1>();
+Layer<input_dim1, dim1> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer1 __attribute__((aligned(64))) = Layer<input_dim1, dim1>();
 #endif /* __MLP_H_ */

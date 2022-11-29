@@ -107,16 +107,18 @@ static StatsCounter avgPathLength("Path tracer", "Average path length", EAverage
  *    one of the photon mappers may be preferable.
  * }
  */
-class MIPathTracer : public MonteCarloIntegrator {
+class MIPathTracer : public MonteCarloIntegrator
+{
 public:
     MIPathTracer(const Properties &props)
-        : MonteCarloIntegrator(props) { }
+        : MonteCarloIntegrator(props) {}
 
     /// Unserialize from a binary data stream
     MIPathTracer(Stream *stream, InstanceManager *manager)
-        : MonteCarloIntegrator(stream, manager) { }
+        : MonteCarloIntegrator(stream, manager) {}
 
-    Spectrum Li(const RayDifferential &r, RadianceQueryRecord &rRec) const {
+    Spectrum Li(const RayDifferential &r, RadianceQueryRecord &rRec) const
+    {
         /* Some aliases and local variables */
         const Scene *scene = rRec.scene;
         Intersection &its = rRec.its;
@@ -132,12 +134,13 @@ public:
         Spectrum throughput(1.0f);
         Float eta = 1.0f;
 
-        while (rRec.depth <= m_maxDepth || m_maxDepth < 0) {
-            if (!its.isValid()) {
+        while (rRec.depth <= m_maxDepth || m_maxDepth < 0)
+        {
+            if (!its.isValid())
+            {
                 /* If no intersection could be found, potentially return
                    radiance from a environment luminaire if it exists */
-                if ((rRec.type & RadianceQueryRecord::EEmittedRadiance)
-                    && (!m_hideEmitters || scattered))
+                if ((rRec.type & RadianceQueryRecord::EEmittedRadiance) && (!m_hideEmitters || scattered))
                     Li += throughput * scene->evalEnvironment(ray);
                 break;
             }
@@ -145,17 +148,15 @@ public:
             const BSDF *bsdf = its.getBSDF(ray);
 
             /* Possibly include emitted radiance if requested */
-            if (its.isEmitter() && (rRec.type & RadianceQueryRecord::EEmittedRadiance)
-                && (!m_hideEmitters || scattered))
+            if (its.isEmitter() && (rRec.type & RadianceQueryRecord::EEmittedRadiance) && (!m_hideEmitters || scattered))
                 Li += throughput * its.Le(-ray.d);
 
             /* Include radiance from a subsurface scattering model if requested */
             if (its.hasSubsurface() && (rRec.type & RadianceQueryRecord::ESubsurfaceRadiance))
                 Li += throughput * its.LoSub(scene, rRec.sampler, -ray.d, rRec.depth);
 
-            if ((rRec.depth >= m_maxDepth && m_maxDepth > 0)
-                || (m_strictNormals && dot(ray.d, its.geoFrame.n)
-                    * Frame::cosTheta(its.wi) >= 0)) {
+            if ((rRec.depth >= m_maxDepth && m_maxDepth > 0) || (m_strictNormals && dot(ray.d, its.geoFrame.n) * Frame::cosTheta(its.wi) >= 0))
+            {
 
                 /* Only continue if:
                    1. The current path length is below the specifed maximum
@@ -172,25 +173,29 @@ public:
             DirectSamplingRecord dRec(its);
 
             if (rRec.type & RadianceQueryRecord::EDirectSurfaceRadiance &&
-                (bsdf->getType() & BSDF::ESmooth)) {
+                (bsdf->getType() & BSDF::ESmooth))
+            {
                 Spectrum value = scene->sampleEmitterDirect(dRec, rRec.nextSample2D());
-                if (!value.isZero()) {
+                if (!value.isZero())
+                {
                     const Emitter *emitter = static_cast<const Emitter *>(dRec.object);
 
                     /* Allocate a record for querying the BSDF */
                     BSDFSamplingRecord bRec(its, its.toLocal(dRec.d), ERadiance);
+                    bRec.sampler = rRec.sampler;
 
                     /* Evaluate BSDF * cos(theta) */
                     const Spectrum bsdfVal = bsdf->eval(bRec);
 
                     /* Prevent light leaks due to the use of shading normals */
-                    if (!bsdfVal.isZero() && (!m_strictNormals
-                            || dot(its.geoFrame.n, dRec.d) * Frame::cosTheta(bRec.wo) > 0)) {
+                    if (!bsdfVal.isZero() && (!m_strictNormals || dot(its.geoFrame.n, dRec.d) * Frame::cosTheta(bRec.wo) > 0))
+                    {
 
                         /* Calculate prob. of having generated that direction
                            using BSDF sampling */
                         Float bsdfPdf = (emitter->isOnSurface() && dRec.measure == ESolidAngle)
-                            ? bsdf->pdf(bRec) : 0;
+                                            ? bsdf->pdf(bRec)
+                                            : 0;
 
                         /* Weight using the power heuristic */
                         Float weight = miWeight(dRec.pdf, bsdfPdf);
@@ -223,18 +228,23 @@ public:
 
             /* Trace a ray in this direction */
             ray = Ray(its.p, wo, ray.time);
-            if (scene->rayIntersect(ray, its)) {
+            if (scene->rayIntersect(ray, its))
+            {
                 /* Intersected something - check if it was a luminaire */
-                if (its.isEmitter()) {
+                if (its.isEmitter())
+                {
                     value = its.Le(-ray.d);
                     dRec.setQuery(ray, its);
                     hitEmitter = true;
                 }
-            } else {
+            }
+            else
+            {
                 /* Intersected nothing -- perhaps there is an environment map? */
                 const Emitter *env = scene->getEnvironmentEmitter();
 
-                if (env) {
+                if (env)
+                {
                     if (m_hideEmitters && !scattered)
                         break;
 
@@ -242,7 +252,9 @@ public:
                     if (!env->fillDirectSamplingRecord(dRec, ray))
                         break;
                     hitEmitter = true;
-                } else {
+                }
+                else
+                {
                     break;
                 }
             }
@@ -255,11 +267,11 @@ public:
             /* If a luminaire was hit, estimate the local illumination and
                weight using the power heuristic */
             if (hitEmitter &&
-                (rRec.type & RadianceQueryRecord::EDirectSurfaceRadiance)) {
+                (rRec.type & RadianceQueryRecord::EDirectSurfaceRadiance))
+            {
                 /* Compute the prob. of generating that direction using the
                    implemented direct illumination sampling technique */
-                const Float lumPdf = (!(bRec.sampledType & BSDF::EDelta)) ?
-                    scene->pdfEmitterDirect(dRec) : 0;
+                const Float lumPdf = (!(bRec.sampledType & BSDF::EDelta)) ? scene->pdfEmitterDirect(dRec) : 0;
                 Li += throughput * value * miWeight(bsdfPdf, lumPdf);
             }
 
@@ -273,13 +285,14 @@ public:
                 break;
             rRec.type = RadianceQueryRecord::ERadianceNoEmission;
 
-            if (rRec.depth++ >= m_rrDepth) {
+            if (rRec.depth++ >= m_rrDepth)
+            {
                 /* Russian roulette: try to keep path weights equal to one,
                    while accounting for the solid angle compression at refractive
                    index boundaries. Stop with at least some probability to avoid
                    getting stuck (e.g. due to total internal reflection) */
 
-                Float q = std::min(throughput.max() * eta * eta, (Float) 0.95f);
+                Float q = std::min(throughput.max() * eta * eta, (Float)0.95f);
                 if (rRec.nextSample1D() >= q)
                     break;
                 throughput /= q;
@@ -293,17 +306,20 @@ public:
         return Li;
     }
 
-    inline Float miWeight(Float pdfA, Float pdfB) const {
+    inline Float miWeight(Float pdfA, Float pdfB) const
+    {
         pdfA *= pdfA;
         pdfB *= pdfB;
         return pdfA / (pdfA + pdfB);
     }
 
-    void serialize(Stream *stream, InstanceManager *manager) const {
+    void serialize(Stream *stream, InstanceManager *manager) const
+    {
         MonteCarloIntegrator::serialize(stream, manager);
     }
 
-    std::string toString() const {
+    std::string toString() const
+    {
         std::ostringstream oss;
         oss << "MIPathTracer[" << endl
             << "  maxDepth = " << m_maxDepth << "," << endl
