@@ -126,7 +126,7 @@
             <boolean name="useWhWd" value="true" />
             <boolean name="isBSDF" value="false" />
             <integer name="textureWidth" value="1024" />
-            <integer name="textureHeight" value="1496" />
+            <integer name="textureHeight" value="748" />
             <float name="eta1" value="1.5"/>
             <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svalpha.txt" />
             <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svdelta_$paramstr4_r" />

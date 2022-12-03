@@ -502,8 +502,8 @@ public:
         }
         /* Construct the microfacet distribution matching the
            roughness values at the current surface position. */
-        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, 4 * g1);
-        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, 0.5 * g2);
+        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, g1);
+        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, g2);
         MicrofacetDistribution *distr = &distr1;
         pdf = 1;
         if (m_flag_isBSDF)
@@ -628,8 +628,8 @@ public:
         }
         /* Construct the microfacet distribution matching the
            roughness values at the current surface position. */
-        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, 4 * g1);
-        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, 0.5 * g2);
+        MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, g1);
+        MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, g2);
         MicrofacetDistribution *distr = nullptr;
         if (m_flag_isBSDF)
         {

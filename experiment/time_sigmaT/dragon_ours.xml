@@ -19,6 +19,7 @@
 			<boolean name="isSV" value="false" />
 			<boolean name="useWhWd" value="true" />
 			<boolean name="isBSDF" value="false" />
+			<float name="eta1" value="1.5"/>
 			<string name="BRDFWeightsPath" value="$paramdir/weights" />
 			<string name="AlphaPath" value="$paramdir/alpha.txt" />
 			<string name="BRDFDeltaPath_r" value="$paramdir/delta_$paramstr_r" />
