@@ -1,0 +1,201 @@
+<scene version="0.6.0">
+
+    <!-- Camera -->
+    <sensor type="perspective">
+        <float name="nearClip" value="0.1"/>
+        <float name="farClip" value="1000"/>
+        <string name="focalLength" value="50mm"/>
+
+        <transform name="toWorld">
+            <lookat origin="8.4152, 0.56724, 2.6988" target="-0.008827, 0.43681, 2.6924" up="0 0 1"/>
+        </transform>
+
+        <sampler type="independent">
+			<integer name="sampleCount" value="$sampleCount" />
+        </sampler>
+
+        <film type="hdrfilm">
+            <boolean name="banner" value="false"/>
+            <!-- 宽高比 16:9 -->
+			<integer name="width" value="$width" />
+			<integer name="height" value="$height" />
+            <rfilter type="gaussian"/>
+        </film>
+    </sensor>
+
+    <!-- Integrator -->
+    <integrator type="path">
+		<integer name="maxDepth" value="$maxDepth" />
+		<integer name="rrDepth" value="$rrDepth" />
+    </integrator>
+
+    <!-- Wall -->
+    <shape type="obj">
+        <string name="filename" value="meshes/wall.obj"/>
+        <bsdf type="normalmap">
+            <texture type="bitmap">
+                <float name="gamma" value="1.0"/>
+                <string name="wrapMode" value="clamp"/>
+                <string name="filename" value="textures/wall_normal.jpg"/>
+            </texture>
+            <bsdf type="roughplastic">
+                <float name="intIOR" value="1.61"/>
+                <texture name="alpha" type="bitmap">
+                    <string name="wrapMode" value="clamp"/>
+                    <string name="filename" value="textures/wall_roughness.jpg"/>
+                </texture>
+                <texture name="diffuseReflectance" type="bitmap">
+                    <string name="wrapMode" value="clamp"/>
+                    <string name="filename" value="textures/wall_albedo.jpg"/>
+                </texture>
+            </bsdf>
+        </bsdf>
+    </shape>
+
+    <!-- Vase 1 -->
+    <shape type="obj">
+        <string name="filename" value="meshes/vase_1.obj"/>
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1024" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svdelta_$paramstr1_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svdelta_$paramstr1_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svdelta_$paramstr1_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svpredWeights_$paramstr1_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svpredWeights_$paramstr1_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_1/svpredWeights_$paramstr1_b" />
+        </bsdf>
+    </shape>
+
+    <!-- Vase 2 -->
+    <shape type="obj">
+        <string name="filename" value="meshes/vase_2.obj"/>
+
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1024" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svdelta_$paramstr2_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svdelta_$paramstr2_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svdelta_$paramstr2_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svpredWeights_$paramstr2_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svpredWeights_$paramstr2_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_2/svpredWeights_$paramstr2_b" />
+        </bsdf>
+    </shape>
+
+    <!-- Vase 3 -->
+    <shape type="obj">
+        <string name="filename" value="meshes/vase_3.obj"/>
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1024" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svdelta_$paramstr3_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svdelta_$paramstr3_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svdelta_$paramstr3_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svpredWeights_$paramstr3_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svpredWeights_$paramstr3_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_3/svpredWeights_$paramstr3_b" />
+        </bsdf>
+    </shape>
+
+    <!-- Vase 4 -->
+    <shape type="obj">
+        <string name="filename" value="meshes/vase_4.obj"/>
+
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1496" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svdelta_$paramstr4_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svdelta_$paramstr4_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svdelta_$paramstr4_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svpredWeights_$paramstr4_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svpredWeights_$paramstr4_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_4/svpredWeights_$paramstr4_b" />
+        </bsdf>
+    </shape>
+
+    <!-- Vase 5 -->
+    <shape type="obj">
+        <string name="filename" value="meshes/vase_5.obj"/>
+
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1024" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svdelta_$paramstr5_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svdelta_$paramstr5_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svdelta_$paramstr5_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svpredWeights_$paramstr5_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svpredWeights_$paramstr5_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/vase_5/svpredWeights_$paramstr5_b" />
+        </bsdf>
+    </shape>
+
+    <!-- Table Leg -->
+    <shape type="obj">
+        <string name="filename" value="meshes/table_leg.obj"/>
+        <bsdf type="roughconductor">
+            <float name="alpha" value="0.05"/>
+            <string name="material" value="Al"/>
+        </bsdf>
+    </shape>
+
+    <!-- Table Top -->
+    <shape type="obj">
+        <string name="filename" value="meshes/table_top.obj"/>
+        <bsdf type="svneuralbsdf">
+			<string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/weights" />
+			<boolean name="isSV" value="false" />
+			<boolean name="useWhWd" value="true" />
+			<boolean name="isBSDF" value="false" />
+			<float name="eta1" value="1.5"/>
+			<string name="AlphaPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/alpha.txt" />
+			<string name="BRDFDeltaPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/delta_$paramstrTable_r" />
+			<string name="BRDFDeltaPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/delta_$paramstrTable_g" />
+			<string name="BRDFDeltaPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/delta_$paramstrTable_b" />
+			<string name="BRDFPredWeightsPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/predWeights_$paramstrTable_r" />
+			<string name="BRDFPredWeightsPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/predWeights_$paramstrTable_g" />
+			<string name="BRDFPredWeightsPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/table_top/predWeights_$paramstrTable_b" />
+
+        </bsdf>
+    </shape>
+
+    <!-- Lights -->
+    <emitter type="envmap">
+        <float name="scale" value="1"/>
+        <string name="filename" value="textures/envmap.exr"/>
+        <transform name="toWorld">
+            <rotate x="1" angle="90"/>
+            <rotate z="1" angle="0"/>
+        </transform>
+    </emitter>
+</scene>
