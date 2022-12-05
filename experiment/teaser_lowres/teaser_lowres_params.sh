@@ -24,7 +24,7 @@ python /home/lzr/layeredBsdfModel/meta_texture_maker_batch.py --GPU=1 \
     --sh_dim=81 --texture_dir=/home/lzr/Projects/mitsuba/experiment/teaser_lowres/teaser_ours_lowres/textures/vase_3 \
     --surface_type=conductor --is_sv=1 --filename=0.1_0_0_1.5_1_0_0_0_0_0.1_0_0_Hg
 
-vase 4
+#vase 4
 mkdir -p /home/lzr/layeredBsdfData/meta_texture/1108001/teaser_lowres/vase_4/; \
 python /home/lzr/layeredBsdfModel/meta_texture_maker_batch.py --GPU=0 \
     --model_dir=/home/lzr/layeredBsdfModel/checkpoints/1108001 \
