@@ -86,6 +86,26 @@ public:
     float _bias[output_dim];
 };
 
+// SharedWeights<168,32,0,0,64,31,32,1,64,31,32,1,32,0,32,1> should be aligned
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
+class SharedWeights
+{
+public:
+    SharedWeights(float *weights) : _layer0(weights), _rest(weights + input_dim0 * dim0 + dim0) {}
+    Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
+    SharedWeights<input_dim1, dim1, input_dim1v2, args...> _rest __attribute__((aligned(64)));
+    static const int num_weights = input_dim0 * dim0 + dim0 + decltype(_rest)::num_weights;
+};
+template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
+class SharedWeights<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
+{
+public:
+    SharedWeights(float *weights) : _layer0(weights), _layer1(weights + input_dim0 * dim0 + dim0) {}
+    Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
+    Layer<input_dim1, dim1> _layer1 __attribute__((aligned(64)));
+    static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
+};
+
 // BSDFNet<168,32,0,0,64,31,32,1,64,31,32,1,32,0,32,1>
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
 class BSDFNet
@@ -118,31 +138,28 @@ public:
             }
         }
         if (dim0 > 0)
-            _layer0.feedforward(inputs, &buf[dim0v2]);
+            p_layer0->feedforward(inputs, &buf[dim0v2]);
         if (input_dim1 - dim0 - dim0v2 > 0)
             memcpy(&buf[dim0v2 + dim0], _injected, sizeof(float) * (input_dim1 - dim0 - dim0v2));
         _rest.feedforward(buf, outputs);
     }
-    static void init(float *weights)
+
+    void set_shared(SharedWeights<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, args...> *shared)
     {
-        _layer0.set(weights);
-        decltype(_rest)::init(weights + input_dim0 * dim0 + dim0);
+        p_layer0 = &(shared->_layer0);
+        _rest.set_shared(&(shared->_rest));
     }
 
-    static Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
+    Layer<input_dim0, dim0> *p_layer0;
 
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
     float _injected_bias[dim0v2];
 
     BSDFNet<input_dim1, dim1, input_dim1v2, args...> _rest;
-    static const int num_weights = input_dim0 * dim0 + dim0 + decltype(_rest)::num_weights;
     static const int num_injected_weights = input_dim0v2 * dim0v2 + dim0v2 + decltype(_rest)::num_injected_weights;
     static const int num_injected = input_dim1 - dim0 - dim0v2 + decltype(_rest)::num_injected;
 };
-template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int... args>
-Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, args...>::_layer0 __attribute__((aligned(64))) = Layer<input_dim0, dim0>();
-
 template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
 class BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>
 {
@@ -173,7 +190,7 @@ public:
             }
         }
         if (dim0 > 0)
-            _layer0.feedforward(inputs, &buf[dim0v2]);
+            p_layer0->feedforward(inputs, &buf[dim0v2]);
         if (input_dim1 - dim0 - dim0v2 > 0)
             memcpy(&buf[dim0v2 + dim0], _injected, sizeof(float) * (input_dim1 - dim0 - dim0v2));
         for (int i = 0; i < dim1v2; i++)
@@ -186,31 +203,25 @@ public:
             outputs[i] = relu(outputs[i]); // only output layer need a relu
         }
         if (dim1 > 0)
-            _layer1.feedforward(buf, &outputs[dim1v2]);
+            p_layer1->feedforward(buf, &outputs[dim1v2]);
     }
 
-    static void init(float *weights)
+    void set_shared(SharedWeights<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2> *shared)
     {
-        _layer0.set(weights);
-        _layer1.set(weights + input_dim0 * dim0 + dim0);
+        p_layer0 = &(shared->_layer0);
+        p_layer1 = &(shared->_layer1);
     }
 
-    static Layer<input_dim0, dim0> _layer0 __attribute__((aligned(64)));
+    Layer<input_dim0, dim0> *p_layer0;
     float _injected[input_dim1 - dim0 - dim0v2];
     float _injected_weights[dim0v2][input_dim0v2];
     float _injected_bias[dim0v2];
-    static Layer<input_dim1, dim1> _layer1 __attribute__((aligned(64)));
-
+    Layer<input_dim1, dim1> *p_layer1;
     float _injected_weights2[dim1v2][input_dim1v2];
     float _injected_bias2[dim1v2];
 
-    static const int num_weights = input_dim0 * dim0 + dim0 + input_dim1 * dim1 + dim1;
     static const int num_injected_weights = input_dim0v2 * dim0v2 + dim0v2 + input_dim1v2 * dim1v2 + dim1v2;
     static const int num_injected = input_dim1 - dim0 - dim0v2;
 };
 
-template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
-Layer<input_dim0, dim0> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer0 __attribute__((aligned(64))) = Layer<input_dim0, dim0>();
-template <int input_dim0, int dim0, int input_dim0v2, int dim0v2, int input_dim1, int dim1, int input_dim1v2, int dim1v2>
-Layer<input_dim1, dim1> BSDFNet<input_dim0, dim0, input_dim0v2, dim0v2, input_dim1, dim1, input_dim1v2, dim1v2>::_layer1 __attribute__((aligned(64))) = Layer<input_dim1, dim1>();
 #endif /* __MLP_H_ */
