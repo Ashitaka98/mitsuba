@@ -44,7 +44,7 @@ public:
         m_BRDFWeightsPath = props.getString("BRDFWeightsPath");
         m_flag_isSV = props.getBoolean("isSV", false);
         m_flag_isBSDF = props.getBoolean("isBSDF", false);
-        m_flag_useWhWd = props.getBoolean("useWhWd", false);
+        m_flag_useWhWd = props.getBoolean("useWhWd", true);
         std::string pdfMode = props.getString("pdfMode", "two_lobe");
         if (pdfMode == "two_lobe")
         {
@@ -94,7 +94,9 @@ public:
             m_BTDFWeightsPath = props.getString("BTDFWeightsPath");
             m_eta2 = props.getFloat("eta2");
             Log(EInfo, "eta2:%f", m_eta2);
-            // m_invEta = 1 / m_eta;
+            m_eta = m_eta1 * m_eta2;
+            m_invEta = 1 / m_eta;
+            Log(EInfo, "eta:%f", m_eta);
             if (m_flag_isSV)
             {
                 m_BTDFDeltaTexturePath_r = props.getString("BTDFDeltaTexturePath_r");

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+
+	<integrator type="path">
+	    <integer name="maxDepth" value="$maxDepth"/>
+	    <integer name="rrDepth" value="$rrDepth"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<float name="nearClip" value="0.1"/>
+		<float name="farClip" value="1000"/>
+		<string name="focalLength" value="42mm"/>
+
+		<transform name="toWorld">
+			<lookAt origin="13.948 -13.057 10.081" target="0.68982 0.27881 -0.51236" up="0 0 1"/>
+        </transform>
+
+        <sampler type="independent">
+	        <integer name="sampleCount" value="$sampleCount"/>
+        </sampler>	
+ 		
+        <film id="film" type="hdrfilm">
+	        <integer name="width" value="$width"/>
+	        <integer name="height" value="$height"/>
+            <boolean name="banner" value="false"/>
+			<string name="fileFormat" value="openexr"/>
+            <!-- <rfilter type="gaussian"/> -->
+			<rfilter type="box"/>
+        </film>
+	</sensor>
+
+    <shape type="obj">
+        <string name="filename" value="meshes/plane.obj"/>
+        <bsdf type="roughplastic">
+            <string name="distribution" value="ggx"/>
+            <float name="alpha" value="0.1"/>
+            <float name="intIOR" value="1.45"/>
+            <spectrum name="diffuseReflectance" value="0.8"/>
+        </bsdf>
+    </shape>
+
+    <shape type="obj">
+        <string name="filename" value="meshes/monster.obj"/>
+        <bsdf type="svneuralbsdf">
+			<string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/weights" />
+			<boolean name="isSV" value="false" />
+			<boolean name="useWhWd" value="true" />
+			<boolean name="isBSDF" value="false" />
+			<string name="pdfMode" value="$pdfMode"/>
+			<float name="eta1" value="$eta_0"/>
+			<string name="AlphaPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/alpha.txt" />
+			<string name="BRDFDeltaPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_r" />
+			<string name="BRDFDeltaPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_g" />
+			<string name="BRDFDeltaPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_b" />
+			<string name="BRDFPredWeightsPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_r" />
+			<string name="BRDFPredWeightsPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_g" />
+			<string name="BRDFPredWeightsPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_b" />
+		</bsdf>
+    </shape>
+
+    <emitter type="envmap">
+		<string name="filename" value="textures/envmap.exr"/>
+    </emitter>
+
+</scene>
