@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+
+	<integrator type="path">
+		<integer name="maxDepth" value="$maxDepth" />
+		<integer name="rrDepth" value="$rrDepth" />
+	</integrator>
+
+	<sensor type="perspective">
+		<float name="nearClip" value="0.1" />
+		<float name="farClip" value="1000" />
+		<string name="focalLength" value="38mm" />
+
+		<transform name="toWorld">
+			<lookAt origin="-0.039053 -3.0091 1.7594" target="0 0 0" up="0 0 1" />
+		</transform>
+
+		<sampler type="ldsampler">
+			<integer name="sampleCount" value="$sampleCount" />
+		</sampler>
+
+		<film id="film" type="hdrfilm">
+			<integer name="width" value="$width" />
+			<integer name="height" value="$height" />
+			<boolean name="banner" value="false" />
+			<rfilter type="box"></rfilter>
+		</film>
+	</sensor>
+
+	<shape type="sphere">
+		<transform name="toWorld">
+			<scale value="1" />
+			<translate x="0" y="0" z="0" />
+		</transform>
+
+		<bsdf type="svneuralbsdf">
+			<string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/weights" />
+			<boolean name="isSV" value="false" />
+			<boolean name="useWhWd" value="true" />
+			<boolean name="isBSDF" value="false" />
+			<string name="pdfMode" value="$pdfMode"/>
+			<float name="eta1" value="$eta_0"/>
+			<string name="AlphaPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/alpha.txt" />
+			<string name="BRDFDeltaPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_r" />
+			<string name="BRDFDeltaPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_g" />
+			<string name="BRDFDeltaPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/delta_$paramstr_b" />
+			<string name="BRDFPredWeightsPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_r" />
+			<string name="BRDFPredWeightsPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_g" />
+			<string name="BRDFPredWeightsPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/predWeights_$paramstr_b" />
+		</bsdf>
+	</shape>
+
+	<emitter type="envmap">
+		<string name="filename" value="envmap.exr" />
+		<transform name="toWorld">
+			<rotate x="1" angle="90" />
+			<rotate z="1" angle="90" />
+		</transform>
+	</emitter>
+
+
+</scene>
