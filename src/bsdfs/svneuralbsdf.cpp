@@ -5,7 +5,7 @@
 #include <mitsuba/render/scene.h>
 #include <mitsuba/core/fstream.h>
 #include <misc/sh_encode.h>
-#include <misc/MLP.h>
+#include <misc/BSDFNet.h>
 #include <misc/utils.h>
 
 #include "microfacet.h"
@@ -31,10 +31,10 @@ enum EpdfType
 };
 class SVNeuralBSDF : public BSDF
 {
-    using BRDFNet = BSDFNet<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
-    using BRDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
-    using BTDFNet = BSDFNet<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
-    using BTDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 0, 0, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 64, 31, 32, 1, 32, 1, 32, 0>;
+    using BRDFNet = BSDFNet<168, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
+    using BRDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
+    using BTDFNet = BSDFNet<168, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
+    using BTDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
 
 public:
     SVNeuralBSDF(const Properties &props) : BSDF(props)
@@ -174,139 +174,139 @@ public:
                 m_svbtdf_g.resize(m_textureWidth * m_textureHeight);
                 m_svbtdf_b.resize(m_textureWidth * m_textureHeight);
             }
-            Log(EInfo, "BRDFNet injected units number: %d", BRDFNet::num_injected);
-            Log(EInfo, "BRDFNet injected weights number: %d", BRDFNet::num_injected_weights);
+            Log(EInfo, "BRDFNet bias number: %d", BRDFNet::num_bias);
+            Log(EInfo, "BRDFNet predected params number: %d", BRDFNet::num_pred);
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaTexturePath_r.c_str(), "r");
-                assert(injectedUnits_file);
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsTexturePath_r.c_str(), "r");
-                assert(injectedWeights_file);
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
+                FILE *injectedBias_file = fopen(m_BRDFDeltaTexturePath_r.c_str(), "r");
+                assert(injectedBias_file);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsTexturePath_r.c_str(), "r");
+                assert(predParams_file);
                 for (int i = 0; i < m_textureHeight; i++)
                 {
                     for (int j = 0; j < m_textureWidth; j++)
                     {
-                        assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
-                        assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
-                        auto p = new BRDFNet(injected_units, injected_weights);
+                        assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
+                        assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
+                        auto p = new BRDFNet(injected_bias, pred_params);
                         p->set_shared(p_brdf_shared.get());
                         m_svbrdf_r[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p);
                     }
                 }
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaTexturePath_g.c_str(), "r");
-                assert(injectedUnits_file);
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsTexturePath_g.c_str(), "r");
-                assert(injectedWeights_file);
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
+                FILE *injectedBias_file = fopen(m_BRDFDeltaTexturePath_g.c_str(), "r");
+                assert(injectedBias_file);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsTexturePath_g.c_str(), "r");
+                assert(predParams_file);
                 for (int i = 0; i < m_textureHeight; i++)
                 {
                     for (int j = 0; j < m_textureWidth; j++)
                     {
-                        assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
-                        assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
-                        auto p = new BRDFNet(injected_units, injected_weights);
+                        assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
+                        assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
+                        auto p = new BRDFNet(injected_bias, pred_params);
                         p->set_shared(p_brdf_shared.get());
                         m_svbrdf_g[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p);
                     }
                 }
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaTexturePath_b.c_str(), "r");
-                assert(injectedUnits_file);
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsTexturePath_b.c_str(), "r");
-                assert(injectedWeights_file);
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
+                FILE *injectedBias_file = fopen(m_BRDFDeltaTexturePath_b.c_str(), "r");
+                assert(injectedBias_file);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsTexturePath_b.c_str(), "r");
+                assert(predParams_file);
                 for (int i = 0; i < m_textureHeight; i++)
                 {
                     for (int j = 0; j < m_textureWidth; j++)
                     {
-                        assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
-                        assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
-                        auto p = new BRDFNet(injected_units, injected_weights);
+                        assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
+                        assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
+                        auto p = new BRDFNet(injected_bias, pred_params);
                         p->set_shared(p_brdf_shared.get());
                         m_svbrdf_b[i * m_textureWidth + j] = std::unique_ptr<BRDFNet>(p);
                     }
                 }
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             if (m_flag_isBSDF)
             {
-                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_injected);
-                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_injected_weights);
+                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_bias);
+                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_pred);
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaTexturePath_r.c_str(), "r");
-                    assert(injectedUnits_file);
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsTexturePath_r.c_str(), "r");
-                    assert(injectedWeights_file);
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaTexturePath_r.c_str(), "r");
+                    assert(injectedBias_file);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsTexturePath_r.c_str(), "r");
+                    assert(predParams_file);
                     for (int i = 0; i < m_textureHeight; i++)
                     {
                         for (int j = 0; j < m_textureWidth; j++)
                         {
-                            assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
-                            assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
-                            auto p = new BTDFNet(injected_units, injected_weights);
+                            assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
+                            assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
+                            auto p = new BTDFNet(injected_bias, pred_params);
                             p->set_shared(p_btdf_shared.get());
                             m_svbtdf_r[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p);
                         }
                     }
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
 
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaTexturePath_g.c_str(), "r");
-                    assert(injectedUnits_file);
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsTexturePath_g.c_str(), "r");
-                    assert(injectedWeights_file);
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaTexturePath_g.c_str(), "r");
+                    assert(injectedBias_file);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsTexturePath_g.c_str(), "r");
+                    assert(predParams_file);
                     for (int i = 0; i < m_textureHeight; i++)
                     {
                         for (int j = 0; j < m_textureWidth; j++)
                         {
-                            assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
-                            assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
-                            auto p = new BTDFNet(injected_units, injected_weights);
+                            assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
+                            assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
+                            auto p = new BTDFNet(injected_bias, pred_params);
                             p->set_shared(p_btdf_shared.get());
                             m_svbtdf_g[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p);
                         }
                     }
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
 
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaTexturePath_b.c_str(), "r");
-                    assert(injectedUnits_file);
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsTexturePath_b.c_str(), "r");
-                    assert(injectedWeights_file);
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaTexturePath_b.c_str(), "r");
+                    assert(injectedBias_file);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsTexturePath_b.c_str(), "r");
+                    assert(predParams_file);
                     for (int i = 0; i < m_textureHeight; i++)
                     {
                         for (int j = 0; j < m_textureWidth; j++)
                         {
-                            assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
-                            assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
-                            auto p = new BTDFNet(injected_units, injected_weights);
+                            assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
+                            assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
+                            auto p = new BTDFNet(injected_bias, pred_params);
                             p->set_shared(p_btdf_shared.get());
                             m_svbtdf_b[i * m_textureWidth + j] = std::unique_ptr<BTDFNet>(p);
                         }
                     }
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
             }
             if (m_pdfMode != EpdfType::EDiffuse)
@@ -332,119 +332,119 @@ public:
         }
         else
         {
-            Log(EInfo, "BRDFNet injected units number: %d", BRDFNet::num_injected);
-            Log(EInfo, "BRDFNet injected weights number: %d", BRDFNet::num_injected_weights);
+            Log(EInfo, "BRDFNet injected units number: %d", BRDFNet::num_bias);
+            Log(EInfo, "BRDFNet injected weights number: %d", BRDFNet::num_pred);
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
 
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaPath_r.c_str(), "r");
-                assert(injectedUnits_file);
-                assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
+                FILE *injectedBias_file = fopen(m_BRDFDeltaPath_r.c_str(), "r");
+                assert(injectedBias_file);
+                assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
 
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsPath_r.c_str(), "r");
-                assert(injectedWeights_file);
-                assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsPath_r.c_str(), "r");
+                assert(predParams_file);
+                assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
 
-                auto p = new BRDFNet(injected_units, injected_weights);
+                auto p = new BRDFNet(injected_bias, pred_params);
                 p->set_shared(p_brdf_shared.get());
                 m_brdf_r = std::unique_ptr<BRDFNet>(p);
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
 
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaPath_g.c_str(), "r");
-                assert(injectedUnits_file);
-                assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
+                FILE *injectedBias_file = fopen(m_BRDFDeltaPath_g.c_str(), "r");
+                assert(injectedBias_file);
+                assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
 
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsPath_g.c_str(), "r");
-                assert(injectedWeights_file);
-                assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsPath_g.c_str(), "r");
+                assert(predParams_file);
+                assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
 
-                auto p = new BRDFNet(injected_units, injected_weights);
+                auto p = new BRDFNet(injected_bias, pred_params);
                 p->set_shared(p_brdf_shared.get());
                 m_brdf_g = std::unique_ptr<BRDFNet>(p);
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             {
-                float injected_units[BRDFNet::num_injected];
-                float injected_weights[BRDFNet::num_injected_weights];
+                float injected_bias[BRDFNet::num_bias];
+                float pred_params[BRDFNet::num_pred];
 
-                FILE *injectedUnits_file = fopen(m_BRDFDeltaPath_b.c_str(), "r");
-                assert(injectedUnits_file);
-                assert(fread(injected_units, sizeof(float), BRDFNet::num_injected, injectedUnits_file) == BRDFNet::num_injected);
+                FILE *injectedBias_file = fopen(m_BRDFDeltaPath_b.c_str(), "r");
+                assert(injectedBias_file);
+                assert(fread(injected_bias, sizeof(float), BRDFNet::num_bias, injectedBias_file) == BRDFNet::num_bias);
 
-                FILE *injectedWeights_file = fopen(m_BRDFPredWeightsPath_b.c_str(), "r");
-                assert(injectedWeights_file);
-                assert(fread(injected_weights, sizeof(float), BRDFNet::num_injected_weights, injectedWeights_file) == BRDFNet::num_injected_weights);
+                FILE *predParams_file = fopen(m_BRDFPredWeightsPath_b.c_str(), "r");
+                assert(predParams_file);
+                assert(fread(pred_params, sizeof(float), BRDFNet::num_pred, predParams_file) == BRDFNet::num_pred);
 
-                auto p = new BRDFNet(injected_units, injected_weights);
+                auto p = new BRDFNet(injected_bias, pred_params);
                 p->set_shared(p_brdf_shared.get());
                 m_brdf_b = std::unique_ptr<BRDFNet>(p);
-                fclose(injectedUnits_file);
-                fclose(injectedWeights_file);
+                fclose(injectedBias_file);
+                fclose(predParams_file);
             }
             if (m_flag_isBSDF)
             {
-                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_injected);
-                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_injected_weights);
+                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_bias);
+                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_pred);
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
 
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaPath_r.c_str(), "r");
-                    assert(injectedUnits_file);
-                    assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaPath_r.c_str(), "r");
+                    assert(injectedBias_file);
+                    assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
 
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsPath_r.c_str(), "r");
-                    assert(injectedWeights_file);
-                    assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsPath_r.c_str(), "r");
+                    assert(predParams_file);
+                    assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
 
-                    auto p = new BTDFNet(injected_units, injected_weights);
+                    auto p = new BTDFNet(injected_bias, pred_params);
                     p->set_shared(p_btdf_shared.get());
                     m_btdf_r = std::unique_ptr<BTDFNet>(p);
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
 
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaPath_g.c_str(), "r");
-                    assert(injectedUnits_file);
-                    assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaPath_g.c_str(), "r");
+                    assert(injectedBias_file);
+                    assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
 
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsPath_g.c_str(), "r");
-                    assert(injectedWeights_file);
-                    assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsPath_g.c_str(), "r");
+                    assert(predParams_file);
+                    assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
 
-                    auto p = new BTDFNet(injected_units, injected_weights);
+                    auto p = new BTDFNet(injected_bias, pred_params);
                     p->set_shared(p_btdf_shared.get());
                     m_btdf_g = std::unique_ptr<BTDFNet>(p);
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
                 {
-                    float injected_units[BTDFNet::num_injected];
-                    float injected_weights[BTDFNet::num_injected_weights];
+                    float injected_bias[BTDFNet::num_bias];
+                    float pred_params[BTDFNet::num_pred];
 
-                    FILE *injectedUnits_file = fopen(m_BTDFDeltaPath_b.c_str(), "r");
-                    assert(injectedUnits_file);
-                    assert(fread(injected_units, sizeof(float), BTDFNet::num_injected, injectedUnits_file) == BTDFNet::num_injected);
+                    FILE *injectedBias_file = fopen(m_BTDFDeltaPath_b.c_str(), "r");
+                    assert(injectedBias_file);
+                    assert(fread(injected_bias, sizeof(float), BTDFNet::num_bias, injectedBias_file) == BTDFNet::num_bias);
 
-                    FILE *injectedWeights_file = fopen(m_BTDFPredWeightsPath_b.c_str(), "r");
-                    assert(injectedWeights_file);
-                    assert(fread(injected_weights, sizeof(float), BTDFNet::num_injected_weights, injectedWeights_file) == BTDFNet::num_injected_weights);
+                    FILE *predParams_file = fopen(m_BTDFPredWeightsPath_b.c_str(), "r");
+                    assert(predParams_file);
+                    assert(fread(pred_params, sizeof(float), BTDFNet::num_pred, predParams_file) == BTDFNet::num_pred);
 
-                    auto p = new BTDFNet(injected_units, injected_weights);
+                    auto p = new BTDFNet(injected_bias, pred_params);
                     p->set_shared(p_btdf_shared.get());
                     m_btdf_b = std::unique_ptr<BTDFNet>(p);
-                    fclose(injectedUnits_file);
-                    fclose(injectedWeights_file);
+                    fclose(injectedBias_file);
+                    fclose(predParams_file);
                 }
             }
             if (m_pdfMode != EpdfType::EDiffuse)
