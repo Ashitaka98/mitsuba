@@ -21,50 +21,53 @@ class SVNBRDF_Caller:
                 'type':
                 'svneuralbsdf',
                 'BRDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/weights',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/weights',
                 'isSV':
                 False,
                 'isBSDF':
                 False,
                 'useWhWd':
                 True,
+                'eta1':
+                1.5,
                 'BRDFDeltaPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_r',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/delta_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_r',
                 'BRDFDeltaPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_g',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/delta_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_g',
                 'BRDFDeltaPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/delta_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_b',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/delta_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_b',
                 'BRDFPredWeightsPath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_r',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/predWeights_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_r',
                 'BRDFPredWeightsPath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_g',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/predWeights_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_g',
                 'BRDFPredWeightsPath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/predWeights_0.3_0_0_1.2_5_0.8_0.8_0.8_0_0.1_0_0_Ag_b',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/predWeights_0.01_0_0_1.5_0_0.1_0.7_0.5_0_0.1_0_0_Cu_b',
                 'AlphaPath':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/sphere_envmap/roughness_0.3_sigmaT_5/alpha.txt'
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/teapot/roughness_0.01_sigmat_0/alpha.txt'
             })
         else:
             self.layered = self.pmgr.create({
                 'type': 'svneuralbsdf',
                 'BRDFWeightsPath':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/weights',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/weights',
                 'isSV': True,
                 'isBSDF': False,
                 'useWhWd': True,
+                'eta1': 1.9,
                 'BRDFDeltaTexturePath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_r',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svdelta_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_r',
                 'BRDFDeltaTexturePath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_g',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svdelta_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_g',
                 'BRDFDeltaTexturePath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svdelta_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_b',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svdelta_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_b',
                 'BRDFPredWeightsTexturePath_r':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_r',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svpredWeights_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_r',
                 'BRDFPredWeightsTexturePath_g':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_g',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svpredWeights_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_g',
                 'BRDFPredWeightsTexturePath_b':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svpredWeights_0.005_0_0_1.5_-1_0_0_0_0_0.05_0_0_Hg_b',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svpredWeights_0.2_0_0_1.9_2_1_1_1_0_0.04_0_0_Ag_b',
                 'AlphaTexturePath':
-                '/home/lzr/layeredBsdfData/meta_texture/1108001/globe_lowres/roughness_0.005/svalpha.txt',
+                '/home/lzr/layeredBsdfData/meta_texture/1108001/shoe/roughness_0.2_sigmat_2/svalpha.txt',
                 'textureWidth': self.txwidth,
                 'textureHeight': self.txheight
             })
@@ -105,10 +108,10 @@ class SVNBRDF_Caller:
 
 
 if __name__ == '__main__':
-    caller = SVNBRDF_Caller(isSV=False)
+    # caller = SVNBRDF_Caller(isSV=False)
 
-    # caller.eval(0, 19, 0.8, 0.8)
+    # caller.eval(0, 1, 0.6, 0.8)
 
-    caller2 = SVNBRDF_Caller(isSV=True, txwidth=256, txheight=128)
+    caller2 = SVNBRDF_Caller(isSV=True, txwidth=780, txheight=521)
 
     caller2.eval(1.0, 0.9, 0.8, 0.7, x=5, y=3)

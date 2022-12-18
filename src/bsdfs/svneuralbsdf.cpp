@@ -31,9 +31,9 @@ enum EpdfType
 };
 class SVNeuralBSDF : public BSDF
 {
-    using BRDFNet = BSDFNet<168, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
+    using BRDFNet = BSDFNet<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
     using BRDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
-    using BTDFNet = BSDFNet<168, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
+    using BTDFNet = BSDFNet<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
     using BTDFNet_SharedWeights = SharedWeights<INPUT_DIM, 32, 32, 31, 32, 31, 32, 31, 32, 31, 32, 31, 32, 1, 1>;
 
 public:
@@ -175,7 +175,7 @@ public:
                 m_svbtdf_b.resize(m_textureWidth * m_textureHeight);
             }
             Log(EInfo, "BRDFNet bias number: %d", BRDFNet::num_bias);
-            Log(EInfo, "BRDFNet predected params number: %d", BRDFNet::num_pred);
+            Log(EInfo, "BRDFNet predicted params number: %d", BRDFNet::num_pred);
             {
                 float injected_bias[BRDFNet::num_bias];
                 float pred_params[BRDFNet::num_pred];
@@ -241,8 +241,8 @@ public:
             }
             if (m_flag_isBSDF)
             {
-                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_bias);
-                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_pred);
+                Log(EInfo, "BTDFNet bias number: %d", BTDFNet::num_bias);
+                Log(EInfo, "BTDFNet predicted params number: %d", BTDFNet::num_pred);
                 {
                     float injected_bias[BTDFNet::num_bias];
                     float pred_params[BTDFNet::num_pred];
@@ -332,8 +332,8 @@ public:
         }
         else
         {
-            Log(EInfo, "BRDFNet injected units number: %d", BRDFNet::num_bias);
-            Log(EInfo, "BRDFNet injected weights number: %d", BRDFNet::num_pred);
+            Log(EInfo, "BRDFNet bias number: %d", BRDFNet::num_bias);
+            Log(EInfo, "BRDFNet predicted params number: %d", BRDFNet::num_pred);
             {
                 float injected_bias[BRDFNet::num_bias];
                 float pred_params[BRDFNet::num_pred];
@@ -390,8 +390,8 @@ public:
             }
             if (m_flag_isBSDF)
             {
-                Log(EInfo, "BTDFNet injected units number: %d", BTDFNet::num_bias);
-                Log(EInfo, "BTDFNet injected weights number: %d", BTDFNet::num_pred);
+                Log(EInfo, "BTDFNet bias number: %d", BTDFNet::num_bias);
+                Log(EInfo, "BTDFNet predicted params number: %d", BTDFNet::num_pred);
                 {
                     float injected_bias[BTDFNet::num_bias];
                     float pred_params[BTDFNet::num_pred];
