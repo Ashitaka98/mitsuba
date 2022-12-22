@@ -87,18 +87,20 @@ public:
             m_BRDFPredWeightsPath_b = props.getString("BRDFPredWeightsPath_b");
         }
         m_eta1 = props.getFloat("eta1");
+        m_invEta = 1 / m_eta1;
         Log(EInfo, "eta1:%f", m_eta1);
         if (m_flag_isBSDF)
         {
 
             m_BTDFWeightsPath = props.getString("BTDFWeightsPath");
-            m_eta2 = props.getFloat("eta2");
-            Log(EInfo, "eta2:%f", m_eta2);
-            m_eta = m_eta1 * m_eta2;
-            m_invEta = 1 / m_eta;
-            Log(EInfo, "eta:%f", m_eta);
             if (m_flag_isSV)
             {
+                if (m_pdfMode == EpdfType::ETwolobe)
+                {
+                    m_albedoTexturePath = props.getString("albedoTexturePath");
+                    m_sigmatTexturePath = props.getString("sigmatTexturePath");
+                    m_flag_useParams = true;
+                }
                 m_BTDFDeltaTexturePath_r = props.getString("BTDFDeltaTexturePath_r");
                 m_BTDFDeltaTexturePath_g = props.getString("BTDFDeltaTexturePath_g");
                 m_BTDFDeltaTexturePath_b = props.getString("BTDFDeltaTexturePath_b");
@@ -108,6 +110,12 @@ public:
             }
             else
             {
+                if (m_pdfMode == EpdfType::ETwolobe)
+                {
+                    m_albedoPath = props.getString("albedoPath");
+                    m_sigmatPath = props.getString("sigmatPath");
+                    m_flag_useParams = true;
+                }
                 m_BTDFDeltaPath_r = props.getString("BTDFDeltaPath_r");
                 m_BTDFDeltaPath_g = props.getString("BTDFDeltaPath_g");
                 m_BTDFDeltaPath_b = props.getString("BTDFDeltaPath_b");
@@ -173,6 +181,11 @@ public:
                 m_svbtdf_r.resize(m_textureWidth * m_textureHeight);
                 m_svbtdf_g.resize(m_textureWidth * m_textureHeight);
                 m_svbtdf_b.resize(m_textureWidth * m_textureHeight);
+                if (m_flag_useParams)
+                {
+                    m_svalbedo.resize(m_textureWidth * m_textureHeight);
+                    m_svsigmat.resize(m_textureWidth * m_textureHeight);
+                }
             }
             Log(EInfo, "BRDFNet bias number: %d", BRDFNet::num_bias);
             Log(EInfo, "BRDFNet predicted params number: %d", BRDFNet::num_pred);
@@ -308,6 +321,30 @@ public:
                     fclose(injectedBias_file);
                     fclose(predParams_file);
                 }
+                if (m_flag_useParams)
+                {
+                    FILE *sigmat_file = fopen(m_sigmatTexturePath.c_str(), "r");
+                    FILE *albedo_file = fopen(m_albedoTexturePath.c_str(), "r");
+                    assert(sigmat_file);
+                    assert(albedo_file);
+                    for (int i = 0; i < m_textureHeight; i++)
+                    {
+                        for (int j = 0; j < m_textureWidth; j++)
+                        {
+                            float rgb[3];
+                            assert(fscanf(sigmat_file, "%f", &rgb[0]) == 1);
+                            assert(fscanf(sigmat_file, "%f", &rgb[1]) == 1);
+                            assert(fscanf(sigmat_file, "%f", &rgb[2]) == 1);
+                            m_svsigmat[i * m_textureWidth + j] = Spectrum(rgb);
+                            assert(fscanf(albedo_file, "%f", &rgb[0]) == 1);
+                            assert(fscanf(albedo_file, "%f", &rgb[1]) == 1);
+                            assert(fscanf(albedo_file, "%f", &rgb[2]) == 1);
+                            m_svalbedo[i * m_textureWidth + j] = Spectrum(rgb);
+                        }
+                    }
+                    fclose(sigmat_file);
+                    fclose(albedo_file);
+                }
             }
             if (m_pdfMode != EpdfType::EDiffuse)
             {
@@ -324,6 +361,12 @@ public:
                         {
                             assert(fscanf(svAlphaFile, "%f", &alpha2) == 1);
                             m_svalpha2[i * m_textureWidth + j] = alpha2;
+                            if (m_flag_isBSDF)
+                            {
+                                float alpha3;
+                                assert(fscanf(svAlphaFile, "%f", &alpha3) == 1);
+                                m_svalpha3[i * m_textureWidth + j] = alpha3;
+                            }
                         }
                     }
                 }
@@ -446,6 +489,24 @@ public:
                     fclose(injectedBias_file);
                     fclose(predParams_file);
                 }
+                if (m_flag_useParams)
+                {
+                    FILE *sigmat_file = fopen(m_sigmatPath.c_str(), "r");
+                    FILE *albedo_file = fopen(m_albedoPath.c_str(), "r");
+                    assert(sigmat_file);
+                    assert(albedo_file);
+                    float rgb[3];
+                    assert(fscanf(sigmat_file, "%f", &rgb[0]) == 1);
+                    assert(fscanf(sigmat_file, "%f", &rgb[1]) == 1);
+                    assert(fscanf(sigmat_file, "%f", &rgb[2]) == 1);
+                    m_sigmat = Spectrum(rgb);
+                    assert(fscanf(albedo_file, "%f", &rgb[0]) == 1);
+                    assert(fscanf(albedo_file, "%f", &rgb[1]) == 1);
+                    assert(fscanf(albedo_file, "%f", &rgb[2]) == 1);
+                    m_albedo = Spectrum(rgb);
+                    fclose(sigmat_file);
+                    fclose(albedo_file);
+                }
             }
             if (m_pdfMode != EpdfType::EDiffuse)
             {
@@ -457,6 +518,11 @@ public:
                 {
                     assert(fscanf(alphaFile, "%f", &m_alpha2) == 1);
                     Log(EInfo, "m_alpha2:%f", m_alpha2);
+                    if (m_flag_isBSDF)
+                    {
+                        assert(fscanf(alphaFile, "%f", &m_alpha3) == 1);
+                        Log(EInfo, "m_alpha3:%f", m_alpha3);
+                    }
                 }
                 fclose(alphaFile);
             }
@@ -478,18 +544,17 @@ public:
         Vector wo;
         if (bRec.wi.z < 0)
         {
-            Log(EError, "wi.z<0 not implemented");
-            // if (bRec.wo.z > 0)
-            // {
-            //     // reciprocity
-            //     wi = bRec.wo;
-            //     wo = bRec.wi;
-            // }
-            // else
-            // {
-            //     wi = -bRec.wi;
-            //     wo = -bRec.wo;
-            // }
+            if (bRec.wo.z > 0)
+            {
+                // reciprocity
+                wi = bRec.wo;
+                wo = bRec.wi;
+            }
+            else
+            {
+                wi = -bRec.wi;
+                wo = -bRec.wo;
+            }
         }
         else
         {
@@ -586,8 +651,16 @@ public:
 
         if (m_pdfMode == EpdfType::EDiffuse)
         {
-            bRec.wo = warp::squareToCosineHemisphere(sample);
-            pdf = warp::squareToCosineHemispherePdf(bRec.wo);
+            if (m_flag_isBSDF)
+            {
+                bRec.wo = warp::squareToUniformSphere(sample);
+                pdf = warp::squareToUniformSpherePdf();
+            }
+            else
+            {
+                bRec.wo = warp::squareToCosineHemisphere(sample);
+                pdf = warp::squareToCosineHemispherePdf(bRec.wo);
+            }
             return eval(bRec) / pdf;
         }
         else if (m_pdfMode == EpdfType::ESingleGGX)
@@ -613,14 +686,14 @@ public:
             {
                 bool sampleReflection = true;
                 /* Sample M, the microfacet normal */
-                Float microfacetPDF;
+                float microfacetPDF;
                 const Normal m = distr.sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
                 if (microfacetPDF == 0)
                     return Spectrum(0.0f);
                 pdf = microfacetPDF;
 
-                Float cosThetaT;
-                Float F = fresnelDielectricExt(dot(bRec.wi, m), cosThetaT, m_eta);
+                float cosThetaT;
+                float F = fresnelDielectricExt(dot(bRec.wi, m), cosThetaT, m_eta1);
 
                 if (bRec.sampler->next1D() > F)
                 {
@@ -632,7 +705,7 @@ public:
                     pdf *= F;
                 }
 
-                Float dwh_dwo;
+                float dwh_dwo;
                 if (sampleReflection)
                 {
                     /* Perfect specular reflection based on the microfacet normal */
@@ -654,8 +727,8 @@ public:
                         return Spectrum(0.0f);
 
                     /* Perfect specular transmission based on the microfacet normal */
-                    bRec.wo = refract(bRec.wi, m, m_eta, cosThetaT);
-                    bRec.eta = cosThetaT < 0 ? m_eta : m_invEta;
+                    bRec.wo = refract(bRec.wi, m, m_eta1, cosThetaT);
+                    bRec.eta = cosThetaT < 0 ? m_eta1 : m_invEta;
                     bRec.sampledComponent = 1;
                     bRec.sampledType = EGlossyTransmission;
 
@@ -664,7 +737,7 @@ public:
                         return Spectrum(0.0f);
 
                     /* Jacobian of the half-direction mapping */
-                    Float sqrtDenom = dot(bRec.wi, m) + bRec.eta * dot(bRec.wo, m);
+                    float sqrtDenom = dot(bRec.wi, m) + bRec.eta * dot(bRec.wo, m);
                     dwh_dwo = (bRec.eta * bRec.eta * dot(bRec.wo, m)) / (sqrtDenom * sqrtDenom);
                 }
                 pdf *= std::abs(dwh_dwo);
@@ -687,15 +760,15 @@ public:
                 if (Frame::cosTheta(bRec.wo) <= 0)
                     return Spectrum(0.0f);
 
-                /* Jacobian of the half-direction mapping */
-                pdf /= 4.0f * dot(bRec.wo, m);
+                pdf = distr.eval(m) * distr.smithG1(bRec.wi, m) / (4.0f * Frame::cosTheta(bRec.wi));
             }
             return eval(bRec) / pdf;
         }
         else
         {
 
-            float g1, g2;
+            float g1, g2, g3;
+            Spectrum sigmat_rgb, albedo_rgb;
             if (m_flag_isSV)
             {
                 int x = math::roundToInt(bRec.its.uv.x * m_textureWidth - 0.5), y = math::roundToInt(bRec.its.uv.y * m_textureHeight - 0.5);
@@ -705,84 +778,118 @@ public:
                 int texel = m_textureWidth * y + x;
                 g1 = m_svalpha1[texel];
                 g2 = m_svalpha2[texel];
+                if (m_flag_isBSDF)
+                {
+                    g3 = m_svalpha3[texel];
+                    sigmat_rgb = m_svsigmat[texel];
+                    albedo_rgb = m_svalbedo[texel];
+                }
             }
             else
             {
                 g1 = m_alpha1;
                 g2 = m_alpha2;
+                if (m_flag_isBSDF)
+                {
+                    g3 = m_alpha3;
+                    sigmat_rgb = m_sigmat;
+                    albedo_rgb = m_albedo;
+                }
             }
             /* Construct the microfacet distribution matching the
                roughness values at the current surface position. */
             MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, g1);
             MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, g2);
             MicrofacetDistribution *distr = &distr1;
-            pdf = 1;
-            if (m_flag_isBSDF)
+            if (m_flag_isBSDF) // wi.z may be below 0
             {
-                Log(EError, "bsdf sample not implemented");
-                bool sampleReflection = true;
-                /* Sample M, the microfacet normal */
-                Float microfacetPDF;
-                const Normal m = distr->sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
-                if (microfacetPDF == 0)
-                    return Spectrum(0.0f);
-                pdf = microfacetPDF;
-
-                Float cosThetaT;
-                Float F = fresnelDielectricExt(dot(bRec.wi, m), cosThetaT, m_eta1);
-
-                if (bRec.sampler->next1D() > F)
+                MicrofacetDistribution distr3(MicrofacetDistribution::EGGX, g3);
+                float F;
+                /* Ensure that the wi vector points into the
+                same hemisphere as the macrosurface normal */
+                Vector wi = math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi;
+                F = fresnelDielectricExt(Frame::cosTheta(wi), m_eta1);
+                if (bRec.sampler->next1D() < F)
                 {
-                    sampleReflection = false;
-                    pdf *= 1 - F;
-                }
-                else
-                {
-                    pdf *= F;
-                }
+                    /* Sample M, the microfacet normal */
+                    float microfacetPDF;
+                    const Normal m = distr1.sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
+                    if (microfacetPDF == 0)
+                        return Spectrum(0.0f);
+                    pdf = microfacetPDF;
 
-                Float dwh_dwo;
-                if (sampleReflection)
-                {
-                    /* Perfect specular reflection based on the microfacet normal */
                     bRec.wo = reflect(bRec.wi, m);
-                    bRec.eta = 1.0f;
-                    bRec.sampledComponent = 0;
+                    bRec.eta = 1.0;
+                    bRec.sampledComponent = 1;
                     bRec.sampledType = EGlossyReflection;
-
                     /* Side check */
                     if (Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) <= 0)
                         return Spectrum(0.0f);
 
                     /* Jacobian of the half-direction mapping */
-                    dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, m));
+                    float dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, m));
+                    pdf *= std::abs(dwh_dwo);
                 }
                 else
                 {
-                    if (cosThetaT == 0)
-                        return Spectrum(0.0f);
+                    float E;
+                    float sigmat = sigmat_rgb.average();
+                    float sigmas = (sigmat_rgb * albedo_rgb).average();
+                    F = fresnelDielectricExt(Frame::cosTheta(wi), m_eta1);
+                    Vector wo = refract(wi, Vector(0, 0, 1), m_eta1);
+                    // assert(Frame::cosTheta(wo) < 0);
+                    float wo_dotn = std::abs(Frame::cosTheta(wo));
+                    E = (sigmas / wo_dotn) * exp(-(sigmat / wo_dotn));
+                    E *= fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
+                    if (bRec.sampler->next1D() < E)
+                    {
+                        //* Sample M, the microfacet normal */
+                        float microfacetPDF;
+                        const Normal m = distr2.sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
+                        if (microfacetPDF == 0)
+                            return Spectrum(0.0f);
+                        pdf = microfacetPDF;
 
-                    /* Perfect specular transmission based on the microfacet normal */
-                    bRec.wo = refract(bRec.wi, m, m_eta, cosThetaT);
-                    bRec.eta = cosThetaT < 0 ? m_eta : m_invEta;
-                    bRec.sampledComponent = 1;
-                    bRec.sampledType = EGlossyTransmission;
+                        bRec.wo = reflect(bRec.wi, m);
+                        bRec.eta = 1.0;
+                        bRec.sampledComponent = 1;
+                        bRec.sampledType = EGlossyReflection;
+                        /* Side check */
+                        if (Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) <= 0)
+                            return Spectrum(0.0f);
 
-                    /* Side check */
-                    if (Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) >= 0)
-                        return Spectrum(0.0f);
+                        /* Jacobian of the half-direction mapping */
+                        float dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, m));
+                        pdf *= std::abs(dwh_dwo);
+                    }
+                    else
+                    {
+                        /* Sample M, the microfacet normal */
+                        float microfacetPDF;
+                        const Normal m = distr3.sample(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, sample, microfacetPDF);
+                        if (microfacetPDF == 0)
+                            return Spectrum(0.0f);
+                        pdf = microfacetPDF;
 
-                    /* Jacobian of the half-direction mapping */
-                    Float sqrtDenom = dot(bRec.wi, m) + bRec.eta * dot(bRec.wo, m);
-                    dwh_dwo = (bRec.eta * bRec.eta * dot(bRec.wo, m)) / (sqrtDenom * sqrtDenom);
+                        bRec.wo = reflect(bRec.wi, m);
+                        bRec.eta = 1.0;
+                        bRec.sampledComponent = 1;
+                        bRec.sampledType = EGlossyTransmission;
+                        /* Side check */
+                        if (Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) <= 0)
+                            return Spectrum(0.0f);
+
+                        /* Jacobian of the half-direction mapping */
+                        float dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, m));
+                        pdf *= std::abs(dwh_dwo);
+                        bRec.wo[2] = -bRec.wo[2];
+                    }
                 }
-                pdf *= std::abs(dwh_dwo);
             }
             else // BRDF (two lobe)
             {
                 // decide which lobe to sample
-                Float cosThetaT;
-                Float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), cosThetaT, m_eta1);
+                float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), m_eta1);
                 if (bRec.sampler->next1D() > F)
                 {
                     // sample distr2
@@ -794,11 +901,7 @@ public:
                     distr = &distr1;
                 }
                 /* Sample M, the microfacet normal */
-                Float microfacetPDF;
-                Normal m = distr->sample(bRec.wi, sample, microfacetPDF);
-                if (microfacetPDF == 0)
-                    return Spectrum(0.0f);
-                pdf *= microfacetPDF;
+                Normal m = distr->sample(bRec.wi, sample);
 
                 /* Perfect specular reflection based on the microfacet normal */
                 bRec.wo = reflect(bRec.wi, m);
@@ -810,8 +913,7 @@ public:
                 if (Frame::cosTheta(bRec.wo) <= 0)
                     return Spectrum(0.0f);
 
-                /* Jacobian of the half-direction mapping */
-                pdf /= 4.0f * dot(bRec.wo, m);
+                pdf = distr->eval(m) * distr->smithG1(bRec.wi, m) / (4.0f * Frame::cosTheta(bRec.wi));
             }
             return eval(bRec) / pdf;
         }
@@ -824,7 +926,14 @@ public:
             return 0.0f;
         if (m_pdfMode == EpdfType::EDiffuse)
         {
-            return warp::squareToCosineHemispherePdf(bRec.wo);
+            if (m_flag_isBSDF)
+            {
+                return warp::squareToUniformSpherePdf();
+            }
+            else
+            {
+                return warp::squareToCosineHemispherePdf(bRec.wo);
+            }
         }
         else if (m_pdfMode == EpdfType::ESingleGGX)
         {
@@ -849,7 +958,7 @@ public:
             {
                 bool reflect = Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) > 0;
                 Vector H;
-                Float dwh_dwo;
+                float dwh_dwo;
 
                 if (reflect)
                 {
@@ -870,23 +979,23 @@ public:
                         return 0.0f;
 
                     /* Calculate the transmission half-vector */
-                    Float eta = Frame::cosTheta(bRec.wi) > 0
-                                    ? m_eta
+                    float eta = Frame::cosTheta(bRec.wi) > 0
+                                    ? m_eta1
                                     : m_invEta;
 
                     H = normalize(bRec.wi + bRec.wo * eta);
 
                     /* Jacobian of the half-direction mapping */
-                    Float sqrtDenom = dot(bRec.wi, H) + eta * dot(bRec.wo, H);
+                    float sqrtDenom = dot(bRec.wi, H) + eta * dot(bRec.wo, H);
                     dwh_dwo = (eta * eta * dot(bRec.wo, H)) / (sqrtDenom * sqrtDenom);
                 }
 
                 /* Ensure that the half-vector points into the
                    same hemisphere as the macrosurface normal */
                 H *= math::signum(Frame::cosTheta(H));
-                Float prob = distr.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
+                float prob = distr.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
 
-                Float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta);
+                float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta1);
                 prob *= reflect ? F : (1 - F);
 
                 return std::abs(prob * dwh_dwo);
@@ -900,7 +1009,8 @@ public:
         }
         else
         {
-            float g1, g2;
+            float g1, g2, g3;
+            Spectrum sigmat_rgb, albedo_rgb;
             if (m_flag_isSV)
             {
                 int x = math::roundToInt(bRec.its.uv.x * m_textureWidth - 0.5), y = math::roundToInt(bRec.its.uv.y * m_textureHeight - 0.5);
@@ -910,25 +1020,46 @@ public:
                 int texel = m_textureWidth * y + x;
                 g1 = m_svalpha1[texel];
                 g2 = m_svalpha2[texel];
+                if (m_flag_isBSDF)
+                {
+                    g3 = m_svalpha3[texel];
+                    sigmat_rgb = m_svsigmat[texel];
+                    albedo_rgb = m_svalbedo[texel];
+                }
             }
             else
             {
                 g1 = m_alpha1;
                 g2 = m_alpha2;
+                if (m_flag_isBSDF)
+                {
+                    g3 = m_alpha3;
+                    sigmat_rgb = m_sigmat;
+                    albedo_rgb = m_albedo;
+                }
             }
             /* Construct the microfacet distribution matching the
                roughness values at the current surface position. */
             MicrofacetDistribution distr1(MicrofacetDistribution::EGGX, g1);
             MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, g2);
-            MicrofacetDistribution *distr = nullptr;
-            if (m_flag_isBSDF)
+            if (m_flag_isBSDF) // wi.z may be below 0
             {
 
-                Log(EError, "bsdf sample not implemented");
+                MicrofacetDistribution distr3(MicrofacetDistribution::EGGX, g3);
                 bool reflect = Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) > 0;
+                float sigmat = sigmat_rgb.average();
+                float sigmas = (sigmat_rgb * albedo_rgb).average();
+                float F, E;
+                /* Ensure that the wi vector points into the
+                   same hemisphere as the macrosurface normal */
+                Vector wi = math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi;
+                F = fresnelDielectricExt(Frame::cosTheta(wi), m_eta1);
+                Vector wo = refract(wi, Vector(0, 0, 1), m_eta1);
+                // assert(Frame::cosTheta(wo) < 0);
+                float wo_dotn = std::abs(Frame::cosTheta(wo));
+                E = (sigmas / wo_dotn) * exp(-(sigmat / wo_dotn));
+                E *= fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
                 Vector H;
-                Float dwh_dwo;
-
                 if (reflect)
                 {
                     /* Zero probability if this component was not requested */
@@ -939,46 +1070,51 @@ public:
                     H = normalize(bRec.wo + bRec.wi);
 
                     /* Jacobian of the half-direction mapping */
-                    dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, H));
+                    float dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, H));
+
+                    /* Ensure that the half-vector points into the
+                        same hemisphere as the macrosurface normal */
+                    H *= math::signum(Frame::cosTheta(H));
+                    float prob1 = distr1.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
+                    float prob2 = distr2.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
+
+                    float pdf, pdf1, pdf2;
+                    pdf1 = std::abs(prob1 * dwh_dwo);
+                    pdf2 = std::abs(prob2 * dwh_dwo);
+                    pdf = (1.0f - F) * E * pdf2 + F * pdf1;
+                    return pdf;
                 }
                 else
                 {
                     /* Zero probability if this component was not requested */
                     if ((bRec.component != -1 && bRec.component != 1) || !(bRec.typeMask & EGlossyTransmission))
                         return 0.0f;
-
-                    /* Calculate the transmission half-vector */
-                    Float eta = Frame::cosTheta(bRec.wi) > 0
-                                    ? m_eta
-                                    : m_invEta;
-
-                    H = normalize(bRec.wi + bRec.wo * eta);
+                    Vector wo = bRec.wo;
+                    wo[2] = -bRec.wo[2];
+                    /* Calculate the reflection half-vector */
+                    H = normalize(wo + bRec.wi);
 
                     /* Jacobian of the half-direction mapping */
-                    Float sqrtDenom = dot(bRec.wi, H) + eta * dot(bRec.wo, H);
-                    dwh_dwo = (eta * eta * dot(bRec.wo, H)) / (sqrtDenom * sqrtDenom);
+                    float dwh_dwo = 1.0f / (4.0f * dot(bRec.wo, H));
+                    /* Ensure that the half-vector points into the
+                       same hemisphere as the macrosurface normal */
+                    H *= math::signum(Frame::cosTheta(H));
+                    float prob = distr3.pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
+
+                    float pdf;
+                    pdf = std::abs((1.0f - F) * (1.0f - E) * prob * dwh_dwo);
+                    return pdf;
                 }
-
-                /* Ensure that the half-vector points into the
-                   same hemisphere as the macrosurface normal */
-                H *= math::signum(Frame::cosTheta(H));
-                Float prob = distr->pdf(math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi, H);
-
-                Float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta);
-                prob *= reflect ? F : (1 - F);
-
-                return std::abs(prob * dwh_dwo);
             }
             else
             {
                 float pdf, pdf1, pdf2;
-                Float cosThetaT;
-                Float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), cosThetaT, m_eta1);
+                float F = fresnelDielectricExt(Frame::cosTheta(bRec.wi), m_eta1);
                 /* Calculate the reflection half-vector */
                 Vector H = normalize(bRec.wo + bRec.wi);
                 pdf1 = distr1.eval(H) * distr1.smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
                 pdf2 = distr2.eval(H) * distr2.smithG1(bRec.wi, H) / (4.0f * Frame::cosTheta(bRec.wi));
-                pdf = (1 - F) * pdf2 + F * pdf1;
+                pdf = (1.0f - F) * pdf2 + F * pdf1;
                 return pdf;
             }
         }
@@ -1015,13 +1151,22 @@ private:
     std::string m_alphaPath;
     std::string m_alphaTexturePath;
 
-    float m_alpha1, m_alpha2;
+    float m_alpha1, m_alpha2, m_alpha3;
     std::vector<float> m_svalpha1;
     std::vector<float> m_svalpha2;
+    std::vector<float> m_svalpha3;
+
+    std::string m_sigmatPath;
+    std::string m_albedoPath;
+    std::string m_sigmatTexturePath;
+    std::string m_albedoTexturePath;
+
+    Spectrum m_sigmat, m_albedo;
+    std::vector<Spectrum> m_svsigmat, m_svalbedo;
 
     EpdfType m_pdfMode = EpdfType::ETwolobe;
 
-    float m_eta1, m_eta2, m_eta;
+    float m_eta1;
     float m_invEta;
 
     std::vector<std::unique_ptr<BRDFNet>> m_svbrdf_r, m_svbrdf_g, m_svbrdf_b;
@@ -1029,6 +1174,7 @@ private:
     bool m_flag_isSV;
     bool m_flag_isBSDF;
     bool m_flag_useWhWd;
+    bool m_flag_useParams = false;
     SH_Encode *sh_encode;
     int m_textureWidth, m_textureHeight;
 
