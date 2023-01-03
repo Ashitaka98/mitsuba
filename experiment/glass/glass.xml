@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+	
+	<integrator type="path">
+	    <integer name="maxDepth" value="$maxDepth"/>
+	    <integer name="rrDepth" value="$rrDepth"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<string name="fovAxis" value="smaller"/>
+		<float name="fov" value="35"/>
+		
+		<transform name="toWorld">
+			<lookAt origin="0 -250 0" target="0 0 0" up="0 0 1"/>
+		</transform>	
+
+		<sampler type="independent">
+	        <integer name="sampleCount" value="$sampleCount"/>
+		</sampler>	
+ 		
+ 		<film id="film" type="hdrfilm">
+	        <integer name="width" value="$width"/>
+	        <integer name="height" value="$height"/>
+			<string name="fileFormat" value="openexr"/>
+			<boolean name="banner" value="false"/>
+		</film>
+	</sensor>
+
+    <emitter type="envmap">
+        <string name="filename" value="textures/envmap.exr"/>
+        <!-- <string name="filename" value="textures/glacier.exr"/> -->
+        <transform name="toWorld">
+            <rotate x="1" angle="90"/>
+            <rotate z="1" angle="0"/>
+            <!-- <rotate z="1" angle="180"/> -->
+        </transform>
+        <float name="scale" value="0.5"/>
+    </emitter>
+
+	<shape type="rectangle">
+		<transform name="toWorld">
+			<scale x="200" y="200"/>
+			<rotate x="1" angle="0"/>
+			<translate x="0" y="0" z="-100"/>
+		</transform>		
+		<bsdf type="roughconductor">
+			<string name="material" value="Al"/>
+		</bsdf>
+	</shape>
+
+	<shape type="obj">
+		<transform name="toWorld">
+			<scale x="10" y="10" z="10"/>
+			<rotate x="1" angle="90"/>
+			<translate x="3" y="0" z="-70"/>
+		</transform>
+		<string name="filename" value="meshes/glass.obj"/>
+		<bsdf type="svneuralbsdf">
+            <boolean name="isSV" value="false" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="true" />
+            <string name="pdfMode" value="two_lobe" />
+            <float name="eta1" value="1.5"/>
+            <string name="AlphaPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/alpha.txt" />
+            <string name="sigmatPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/sigmat_$paramstr.txt" />
+            <string name="albedoPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/albedo_$paramstr.txt" />
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/weights" />
+            <string name="BTDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/weights" />
+            <string name="BRDFDeltaPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/delta_$paramstr_r" />
+            <string name="BRDFDeltaPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/delta_$paramstr_g" />
+            <string name="BRDFDeltaPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/delta_$paramstr_b" />
+            <string name="BRDFPredWeightsPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/predWeights_$paramstr_r" />
+            <string name="BRDFPredWeightsPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/predWeights_$paramstr_g" />
+            <string name="BRDFPredWeightsPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/predWeights_$paramstr_b" />
+            <string name="BTDFDeltaPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/delta_$paramstr_r" />
+            <string name="BTDFDeltaPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/delta_$paramstr_g" />
+            <string name="BTDFDeltaPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/delta_$paramstr_b" />
+            <string name="BTDFPredWeightsPath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/predWeights_$paramstr_r" />
+            <string name="BTDFPredWeightsPath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/predWeights_$paramstr_g" />
+            <string name="BTDFPredWeightsPath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/predWeights_$paramstr_b" />
+        </bsdf>									
+	</shape>			
+
+</scene>

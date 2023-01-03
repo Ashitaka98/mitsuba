@@ -84,7 +84,7 @@ function run_gt(){
     echo 'rendering gt done'
 }
 
-sampleCount=16
+sampleCount=64
 sampleCount_gy=256
 width=256
 height=256

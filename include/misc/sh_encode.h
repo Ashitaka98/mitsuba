@@ -2,6 +2,8 @@
 #ifndef __SH_ENCODE_H_
 #define __SH_ENCODE_H_
 
+#include <mitsuba/mitsuba.h>
+#include <mitsuba/core/math.h>
 #include <cmath>
 #include <cassert>
 #include <iostream>
@@ -114,8 +116,7 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
-        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
+        d[2] = mitsuba::math::clamp(d[2], -0.9999f, 0.9999f);
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
         if (theta_d < 0)
@@ -170,8 +171,7 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
-        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
+        d[2] = mitsuba::math::clamp(d[2], -0.9999f, 0.9999f);
 
         float phi_d = acos(d[2]);
         float theta_d = atan2(d[1], d[0]);
@@ -227,8 +227,8 @@ public:
             for (int j = 0; j < 3; j++)
                 d[i] += rot_y[i][j] * d_tmp[j];
         }
-        d[2] = d[2] < -0.9999f ? -0.9999f : d[2];
-        d[2] = d[2] > 0.9999f ? 0.9999f : d[2];
+
+        d[2] = mitsuba::math::clamp(d[2], -0.9999f, 0.9999f);
         Omega_io_xyz whwd;
         whwd.xyz[0] = hx;
         whwd.xyz[1] = hy;

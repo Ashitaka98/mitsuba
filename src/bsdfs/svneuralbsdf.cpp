@@ -185,6 +185,7 @@ public:
                 {
                     m_svalbedo.resize(m_textureWidth * m_textureHeight);
                     m_svsigmat.resize(m_textureWidth * m_textureHeight);
+                    m_svalpha3.resize(m_textureWidth * m_textureHeight);
                 }
             }
             Log(EInfo, "BRDFNet bias number: %d", BRDFNet::num_bias);
@@ -252,6 +253,7 @@ public:
                 fclose(injectedBias_file);
                 fclose(predParams_file);
             }
+            Log(EInfo, "BRDFNet predWeights and delta loaded");
             if (m_flag_isBSDF)
             {
                 Log(EInfo, "BTDFNet bias number: %d", BTDFNet::num_bias);
@@ -321,6 +323,7 @@ public:
                     fclose(injectedBias_file);
                     fclose(predParams_file);
                 }
+                Log(EInfo, "BTDFNet predWeights and delta loaded");
                 if (m_flag_useParams)
                 {
                     FILE *sigmat_file = fopen(m_sigmatTexturePath.c_str(), "r");
@@ -345,6 +348,7 @@ public:
                     fclose(sigmat_file);
                     fclose(albedo_file);
                 }
+                Log(EInfo, "sigmat and albedo textures loaded");
             }
             if (m_pdfMode != EpdfType::EDiffuse)
             {
@@ -576,11 +580,8 @@ public:
         }
         else
         {
-
-            wiwo.xyz[2] = wiwo.xyz[2] < -0.9999f ? -0.9999f : wiwo.xyz[2];
-            wiwo.xyz[2] = wiwo.xyz[2] > 0.9999f ? 0.9999f : wiwo.xyz[2];
-            wiwo.xyz[5] = wiwo.xyz[5] < -0.9999f ? -0.9999f : wiwo.xyz[5];
-            wiwo.xyz[5] = wiwo.xyz[5] > 0.9999f ? 0.9999f : wiwo.xyz[5];
+            wiwo.xyz[2] = math::clamp(wiwo.xyz[2], -0.9999f, 0.9999f);
+            wiwo.xyz[5] = math::clamp(wiwo.xyz[5], -0.9999f, 0.9999f);
             sh_i = sh_encode->eval_sh_basis<SH_DIMS>(wiwo.xyz[0], wiwo.xyz[1], wiwo.xyz[2]);
             sh_o = sh_encode->eval_sh_basis<SH_DIMS>(wiwo.xyz[3], wiwo.xyz[4], wiwo.xyz[5]);
             memcpy(inputs, wiwo.xyz, sizeof(float) * 6);
@@ -630,9 +631,6 @@ public:
             }
         }
         inverse_miu_law_compression(MIU, pred, 3);
-        // std::cout << pred[0] << " " << pred[1] << " " << pred[2] << "\n";
-        // std::cout << wo.z << " " << abs(bRec.wo.z) << " " << Frame::cosTheta(bRec.wo) << " " << abs(Frame::cosTheta(bRec.wo)) << "\n";
-        // return Spectrum(pred) * Frame::cosTheta(bRec.wo);
         return Spectrum(pred);
     }
     Spectrum sample(BSDFSamplingRecord &bRec, const Point2 &_sample) const override
@@ -803,6 +801,24 @@ public:
             MicrofacetDistribution *distr = &distr1;
             if (m_flag_isBSDF) // wi.z may be below 0
             {
+                // three lobe : BRDF : R TRT BTDF : TT
+                {
+                    /* Ensure that the wi vector points into the
+                    same hemisphere as the macrosurface normal */
+                    Vector wi = math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi;
+                    Vector wo1 = refract(wi, Vector(0, 0, 1), m_eta1);
+                    Vector wo2 = -wi;
+                    double s1 = 0.5 * (1 + (1 / m_eta1) * abs(Frame::cosTheta(wi) / Frame::cosTheta(wo1)));
+                    double s2 = 0.5 * (1 + m_eta1 * abs(Frame::cosTheta(-wo1) / Frame::cosTheta(wo2)));
+                    double tmp1 = pow(s1 * g1, 1.1);
+                    double tmp2 = pow(s2 * g3, 1.1);
+                    double variance1 = tmp1 / (1 - tmp1);
+                    double variance2 = tmp2 / (1 - tmp2);
+                    double var_trans = variance1 / m_eta1 + variance2;
+                    var_trans *= 1.0f / (4.0f * Frame::cosTheta(wi));
+                    double g_trans = pow(var_trans / (1 + var_trans), 1.0 / 1.1);
+                    g3 = g_trans;
+                }
                 MicrofacetDistribution distr3(MicrofacetDistribution::EGGX, g3);
                 float F;
                 /* Ensure that the wi vector points into the
@@ -833,14 +849,8 @@ public:
                 else
                 {
                     float E;
-                    float sigmat = sigmat_rgb.average();
-                    float sigmas = (sigmat_rgb * albedo_rgb).average();
-                    F = fresnelDielectricExt(Frame::cosTheta(wi), m_eta1);
                     Vector wo = refract(wi, Vector(0, 0, 1), m_eta1);
-                    // assert(Frame::cosTheta(wo) < 0);
-                    float wo_dotn = std::abs(Frame::cosTheta(wo));
-                    E = (sigmas / wo_dotn) * exp(-(sigmat / wo_dotn));
-                    E *= fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
+                    E = fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
                     if (bRec.sampler->next1D() < E)
                     {
                         //* Sample M, the microfacet normal */
@@ -1044,21 +1054,33 @@ public:
             MicrofacetDistribution distr2(MicrofacetDistribution::EGGX, g2);
             if (m_flag_isBSDF) // wi.z may be below 0
             {
-
+                // three lobe: BRDF:R TRT  BTDF:TT
+                {
+                    /* Ensure that the wi vector points into the
+                    same hemisphere as the macrosurface normal */
+                    Vector wi = math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi;
+                    Vector wo1 = refract(wi, Vector(0, 0, 1), m_eta1);
+                    Vector wo2 = -wi;
+                    double s1 = 0.5 * (1 + (1 / m_eta1) * abs(Frame::cosTheta(wi) / Frame::cosTheta(wo1)));
+                    double s2 = 0.5 * (1 + m_eta1 * abs(Frame::cosTheta(-wo1) / Frame::cosTheta(wo2)));
+                    double tmp1 = pow(s1 * g1, 1.1);
+                    double tmp2 = pow(s2 * g3, 1.1);
+                    double variance1 = tmp1 / (1 - tmp1);
+                    double variance2 = tmp2 / (1 - tmp2);
+                    double var_trans = variance1 / m_eta1 + variance2;
+                    var_trans *= 1.0f / (4.0f * Frame::cosTheta(wi));
+                    double g_trans = pow(var_trans / (1 + var_trans), 1.0 / 1.1);
+                    g3 = g_trans;
+                }
                 MicrofacetDistribution distr3(MicrofacetDistribution::EGGX, g3);
                 bool reflect = Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo) > 0;
-                float sigmat = sigmat_rgb.average();
-                float sigmas = (sigmat_rgb * albedo_rgb).average();
                 float F, E;
                 /* Ensure that the wi vector points into the
                    same hemisphere as the macrosurface normal */
                 Vector wi = math::signum(Frame::cosTheta(bRec.wi)) * bRec.wi;
                 F = fresnelDielectricExt(Frame::cosTheta(wi), m_eta1);
                 Vector wo = refract(wi, Vector(0, 0, 1), m_eta1);
-                // assert(Frame::cosTheta(wo) < 0);
-                float wo_dotn = std::abs(Frame::cosTheta(wo));
-                E = (sigmas / wo_dotn) * exp(-(sigmat / wo_dotn));
-                E *= fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
+                E = fresnelDielectricExt(Frame::cosTheta(-wo), m_invEta);
                 Vector H;
                 if (reflect)
                 {
