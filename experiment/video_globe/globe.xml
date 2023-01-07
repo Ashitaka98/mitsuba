@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+	
+	<integrator type="path">
+		<integer name="maxDepth" value="$maxDepth" />
+		<integer name="rrDepth" value="$rrDepth" />
+	</integrator>
+
+	<sensor type="perspective">
+		<string name="fovAxis" value="smaller"/>
+		<float name="fov" value="38"/>
+		
+		<transform name="toWorld">
+			<lookAt origin="0 -420 180" target="0 0 20" up="0 0 1"/>
+		</transform>	
+
+		<sampler type="independent">
+			<integer name="sampleCount" value="$sampleCount" />
+		</sampler>	
+ 		
+ 		<film id="film" type="hdrfilm">
+			<integer name="width" value="$width" />
+			<integer name="height" value="$height" />
+			<string name="fileFormat" value="openexr"/>
+			<boolean name="banner" value="false"/>
+			<!-- <rfilter type="box"/> -->
+
+<!--             <integer name="cropOffsetX" value="2304"/>
+            <integer name="cropOffsetY" value="1948"/>
+            <integer name="cropWidth" value="512"/>
+            <integer name="cropHeight" value="512"/>
+            <integer name="width" value="5242"/>
+            <integer name="height" value="5242"/> -->
+		</film>
+	</sensor>
+
+    <emitter type="envmap">
+        <string name="filename" value="textures/envmap.exr"/>
+        <transform name="toWorld">
+            <rotate x="1" angle="90"/>
+            <rotate z="1" angle="210"/>
+        </transform>
+        <float name="scale" value="2"/>
+    </emitter>
+
+	<shape type="rectangle">
+		<transform name="toWorld">
+			<scale x="200" y="200"/>
+			<translate x="0" y="0" z="-100"/>
+		</transform>
+		<bsdf type="roughplastic"/>
+	</shape>
+
+	<shape type="obj">
+		<transform name="toWorld">
+			<scale x="1" y="1" z="1"/>
+			<rotate x="1" angle="90"/>
+			<rotate z="1" angle="180"/>
+			<translate x="0" y="0" z="-100"/>
+		</transform>
+		<string name="filename" value="meshes/globe2.obj"/>
+		<bsdf type="conductor"/>
+	</shape>
+
+	<shape type="obj">
+		<transform name="toWorld">
+			<scale x="1" y="1" z="1"/>
+			<translate x="0.7625" y="-159.5575" z="2.143"/>
+			<rotate x="54.169" y="184.171" z="0" angle="$angle"/>
+			<translate x="-0.7625" y="159.5575" z="-2.143"/>
+			<rotate x="1" angle="90"/>
+			<rotate z="1" angle="180"/>
+			<translate x="0" y="0" z="-100"/>
+		</transform>
+		<string name="filename" value="meshes/globe1.obj"/>
+
+		<bsdf type="svneuralbsdf">
+			<string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/weights" />
+			<boolean name="isSV" value="true" />
+			<boolean name="useWhWd" value="true" />
+			<boolean name="isBSDF" value="false" />
+			<integer name="textureWidth" value="1080" />
+			<integer name="textureHeight" value="540" />
+			<float name="eta1" value="1.5"/>
+			<string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svalpha.txt" />
+			<string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svdelta_$paramstr_r" />
+			<string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svdelta_$paramstr_g" />
+			<string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svdelta_$paramstr_b" />
+			<string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svpredWeights_$paramstr_r" />
+			<string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svpredWeights_$paramstr_g" />
+			<string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir/svpredWeights_$paramstr_b" />
+		</bsdf>
+	</shape>
+
+
+</scene>
