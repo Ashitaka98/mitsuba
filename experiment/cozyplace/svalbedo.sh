@@ -1,10 +1,10 @@
 #! /bin/bash
 source ~/.bashrc
 source activate
-sampleCount=64
+sampleCount=2048
 for sigmat in 1 ; do
     for alpha0 in 0.01 ; do
-        for tex_albedo in 2 4 5 6 7; do
+        for tex_albedo in 2 3 5; do
             # conda activate layeredModel 
             # cp /home/lzr/Projects/mitsuba/experiment/cozyplace/tex_albedo/${tex_albedo}.exr /home/lzr/Projects/mitsuba/experiment/cozyplace/tex_temp_albedo/albedo.exr
             # #BRDF model
@@ -24,14 +24,14 @@ for sigmat in 1 ; do
 
             conda activate layeredBsdf
             source setpath.sh
-            mkdir -p /home/lzr/Projects/mitsuba/experiment/cozyplace/output/svalbedo
+            mkdir -p /home/lzr/Projects/mitsuba/experiment/cozyplace/output/svalbedo_4g3
             /home/lzr/Projects/mitsuba/dist/mitsuba /home/lzr/Projects/mitsuba/experiment/cozyplace/cozyplace.xml \
                 -D maxDepth=100 -D rrDepth=20 -D sampleCount=$sampleCount -D width=800 -D height=1200 \
                 -D paramdir1="1229001/cozyplace/albedoTex_${tex_albedo}" \
                 -D paramdir2="1229002/cozyplace/albedoTex_${tex_albedo}" \
                 -D paramstr="${alpha0}_0_0_1.5_${sigmat}_1_1_1_0_${alpha0}_0_0_-1" \
-                -D eta1=1.5 -D texWidth=700 -D texHeight=1500 \
-                -o /home/lzr/Projects/mitsuba/experiment/cozyplace/output/svalbedo/tex_${tex_albedo}_roughness_${alpha0}_sigmat_${sigmat}_$sampleCount.exr
+                -D eta1=1.5 -D texWidth=800 -D texHeight=2000 \
+                -o /home/lzr/Projects/mitsuba/experiment/cozyplace/output/svalbedo_4g3/tex_${tex_albedo}_roughness_${alpha0}_sigmat_${sigmat}_$sampleCount.exr
 
             
         done

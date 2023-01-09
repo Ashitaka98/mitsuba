@@ -64,7 +64,7 @@
         <string name="BTDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr_b" />
 	</bsdf>		
     <shape type="obj" >
-		<string name="filename" value="models/V7.obj" />
+		<string name="filename" value="models/otherstuff.obj" />
 
 		<boolean name="faceNormals" value="true" />
 		<transform name="toWorld">

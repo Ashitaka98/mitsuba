@@ -1,0 +1,92 @@
+# Blender 3.3.1 MTL File: 'V2.blend'
+# www.blender.org
+
+newmtl Strelizia_Nikolai_Concrete
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Concrete 01.jpg
+
+newmtl Strelizia_Nikolai_Soil
+Ns 2.066112
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/ground_texture.jpg
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_front_01
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Strelizia_nikolai_branch_03000.jpg
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_front_02
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.031551 0.078057 0.027755
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_front_03
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.034230 0.069727 0.027755
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_front_1
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.025371 0.054592 0.023104
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_trunk_01
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Strelizia_nikolai_branch_03001.jpg
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_trunk_02
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Strelizia_nikolai_branch_02.jpg
+
+newmtl Strelizia_Nikolai_Str_Nikol_flower_trunk_03
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Strelizia_nikolai_branch_03.jpg
