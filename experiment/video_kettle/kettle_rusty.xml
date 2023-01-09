@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<scene version="0.6.0">
+	<integrator type="path">
+		<integer name="maxDepth" value="$maxDepth" />
+		<integer name="rrDepth" value="$rrDepth" />
+		<boolean name="strictNormals" value="true"/>
+		<boolean name="hideEmitters" value="false"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<float name="fov" value="15"/>
+		<string name="fovAxis" value="x"/>
+		<float name="nearClip" value="0.1"/>
+		<transform name="toWorld">
+			<lookat target="0,0,7" origin="0, 60, 30" up="0, 0, 1"/>
+             <rotate z="1.0" angle="0"/>
+		</transform>
+
+		<sampler type="independent">
+			<integer name="sampleCount" value="$sampleCount" />
+		</sampler>
+
+		<film type="hdrfilm">
+			<boolean name="banner" value="false"/>
+			<string name="fileFormat" value="openexr"/>
+			<boolean name="highQualityEdges" value="false"/>
+			<integer name="width" value="$width" />
+			<integer name="height" value="$height" />
+
+			<!-- <integer name="cropOffsetX" value="450"/>
+			<integer name="cropOffsetY" value="250"/>
+			<integer name="cropHeight" value="200"/>
+			<integer name="cropWidth" value="200"/> -->
+
+			<rfilter type="gaussian"/>
+			<!-- <rfilter type="box"/> -->
+		</film>
+	</sensor>
+
+	
+    <shape type="sphere">
+        <transform name="toWorld">
+            <scale value="40"/>
+            <translate x="-120" y="120" z="30"/>
+            <rotate z="1" angle="240"/>
+			<rotate z="1" angle="$Angle"/>
+        </transform>
+        <emitter type="area">
+            <spectrum name="radiance" value="12"/> 
+			<blackbody name="intensity" temperature="4500K"/>
+        </emitter>
+    </shape>
+
+    <shape type="sphere">
+        <transform name="toWorld">
+            <scale value="40"/>
+            <translate x="60" y="120" z="45"/>
+            <rotate z="1" angle="240"/>
+			<rotate z="1" angle="$Angle"/>
+        </transform>
+        <emitter type="area">
+            <spectrum name="radiance" value="12"/> 
+			<blackbody name="intensity" temperature="4500K"/>
+        </emitter>
+    </shape>  
+  
+   <emitter type="envmap">
+        <string name="filename" value="textures/envmap/A.jpg"/>
+        <transform name="toWorld">
+            <matrix value="-0.224951 -0.000001 -0.974370 0.000000 -0.974370 0.000000 0.224951 0.000000 0.000000 1.000000 -0.000001 8.870000 0.000000 0.000000 0.000000 1.000000 "/>
+            <rotate z="1" angle="240"/>
+            <rotate z="1" angle="$Angle"/>
+        </transform>
+        <float name="scale" value="3"/>
+    </emitter>
+
+
+	<!-- KettleHead -->
+	<shape type="obj">
+		<transform name="toWorld">
+			<rotate z="1.0" angle="180"/>
+            <rotate x="1.0" angle="275"/>
+			<translate x="0" y="0.4" z="0.1"/>
+            <scale x="1.3" y="1.3" z="1.3"/>
+		</transform>
+        <string name="filename" value="meshes/kettleHead.obj"/>
+		<boolean name="flipNormals" value="false"/>
+		<bsdf type="roughplastic">
+			<string name="distribution" value="beckmann"/>
+			<float name="alpha" value="0.1"/>
+            <string name="material" value=""/>
+			<spectrum name="diffuseReflectance" value="0.0, 0.0, 0.0"/>
+		</bsdf>
+	</shape>
+
+	<!-- KettleBody-->
+	 <shape type="obj">
+        <string name="filename" value="meshes/kettleBodyV7_rusty.obj"/>
+		<transform name="toWorld">
+			<rotate z="1.0" angle="180"/>
+            <rotate x="1.0" angle="275"/>
+			<translate x="0" y="0.4" z="0.1"/>
+            <scale x="1.3" y="1.3" z="1.3"/>
+		</transform>
+		<boolean name="flipNormals" value="false"/>
+
+        <bsdf type="svneuralbsdf">
+            <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/weights" />
+            <boolean name="isSV" value="true" />
+            <boolean name="useWhWd" value="true" />
+            <boolean name="isBSDF" value="false" />
+            <integer name="textureWidth" value="1024" />
+            <integer name="textureHeight" value="1024" />
+            <float name="eta1" value="$eta0"/>
+			<string name="pdfMode" value="$pdfMode"/>
+            <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svalpha.txt" />
+            <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr2_r" />
+            <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr2_g" />
+            <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr2_b" />
+            <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr2_r" />
+            <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr2_g" />
+            <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr2_b" />
+        </bsdf>
+    </shape>
+
+	 <shape type="rectangle">
+		<transform name="toWorld">
+			<scale x="50.0" y="90.0"/>
+			<translate x="0" y="-20" z="-0.1"/>
+		</transform>
+
+		<!-- <bsdf type="diffuse"/> -->
+		<bsdf type="roughconductor">
+			<float name="alpha" value="0.1"/>
+			<string name="material" value="Al"/>
+			<spectrum name="specularReflectance" value="0.15"/>
+		</bsdf>
+
+	</shape>
+</scene>
