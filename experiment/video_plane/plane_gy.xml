@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+	
+	<integrator type="path_layered">
+	    <integer name="maxDepth" value="$maxDepth"/>
+	    <integer name="rrDepth" value="$rrDepth"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<string name="fovAxis" value="smaller"/>
+		<float name="fov" value="35"/>
+		
+		<transform name="toWorld">
+			<lookAt origin="0 -260 50" target="0 0 50" up="0 0 1"/>
+		</transform>	
+		<sampler type="independent">
+	        <integer name="sampleCount" value="$sampleCount"/>
+		</sampler>	
+ 		
+ 		<film id="film" type="hdrfilm">
+	        <integer name="width" value="$width"/>
+	        <integer name="height" value="$height"/>
+			<string name="fileFormat" value="openexr"/>
+			<boolean name="banner" value="false"/>
+			<rfilter type="box" />
+		</film>
+	</sensor>
+
+	<bsdf type="multilayered" id='layered'>
+		<boolean name="bidir" value="true"/>
+		<string name="pdf" value="bidirStochTRT"/>
+		<integer name="stochPdfDepth" value="2"/>
+		<integer name="pdfRepetitive" value="3"/>
+		<float name="diffusePdf" value="0.1"/>
+		<float name="maxSurvivalProb" value="1"/>
+
+		<integer name="nbLayers" value="2"/>
+
+		<bsdf type="roughdielectric" name="surface_0">
+			<float name="extIOR" value="1.0"/>
+			<float name="intIOR" value="$eta_0"/>
+			<float name="alpha" value="$alpha_0"/>
+			<string name="distribution" value="ggx"/>
+		</bsdf>
+		<spectrum name="sigmaT_0" value="$sigmaT_0"/>
+		<spectrum name="albedo_0" value="$albedo_0"/>
+		<phase type="hg" name="phase_0">
+			<float name="g" value="0"/>
+		</phase>
+
+		<bsdf type="roughdielectric" name="surface_1">
+			<float name="extIOR" value="$eta_0"/>
+			<float name="intIOR" value="1.0"/>
+			<float name="alpha" value="$alpha_0"/>
+			<string name="distribution" value="ggx"/>
+		</bsdf>
+	</bsdf>		
+
+    <emitter type="envmap">
+        <string name="filename" value="textures/envmap.exr"/>
+        <!-- <string name="filename" value="textures/glacier.exr"/> -->
+        <transform name="toWorld">
+            <rotate x="1" angle="90"/>
+            <rotate z="1" angle="10"/>
+            <!-- <rotate z="1" angle="180"/> -->
+        </transform>
+        <float name="scale" value="1"/>
+    </emitter>
+
+	<shape type="rectangle">
+		<transform name="toWorld">
+			<scale x="60" y="60"/>
+			<rotate x="1" angle="-90"/>
+			<translate x="0" y="0" z="50"/>
+		</transform>
+		<boolean name="flipNormals" value="true"/>
+
+		<ref id='layered'/>
+	</shape>
+
+	<!-- <shape type="rectangle">
+		<transform name="toWorld">
+			<scale x="30" y="30"/>
+			<rotate x="1" angle="-90"/>
+			<translate x="0" y="10" z="50"/>
+		</transform>
+		<boolean name="flipNormals" value="true"/>
+
+		<ref id='layered'/>
+	</shape> -->
+
+
+	<!-- <shape type="sphere">
+        <transform name="toWorld">
+            <scale value="20"/>
+            <translate x="0" y="-250" z="80"/>
+        </transform>
+        <emitter type="area">
+            <spectrum name="radiance" value="10"/> 
+			<blackbody name="intensity" temperature="4500K"/>
+        </emitter>
+    </shape> -->
+
+	<shape type="obj">
+        <string name="filename" value="meshes/picture_frame_02.obj"/>
+		<transform name="toWorld">
+			<scale x="250" y="250"/>
+             <rotate z="1" angle="180"/>
+			<rotate x="1" angle="90"/>
+			<translate x="0" y="-10" z="50"/>
+		</transform>
+        <bsdf type="normalmap">
+            <texture type="bitmap">
+                <float name="gamma" value="1.0"/>
+                <string name="wrapMode" value="clamp"/>
+                <string name="filename" value="/textures/fancy_picture_frame_01_nor_gl_2k.exr"/>
+            </texture>
+            <bsdf type="roughplastic">
+                <float name="intIOR" value="1.61"/>
+                <texture name="alpha" type="bitmap">
+                    <string name="wrapMode" value="clamp"/>
+                    <string name="filename" value="/textures/fancy_picture_frame_01_rough_2k.jpg"/>
+                </texture>
+                <texture name="diffuseReflectance" type="bitmap">
+                    <string name="wrapMode" value="clamp"/>
+                    <string name="filename" value="/textures/fancy_picture_frame_01_diff_2k.jpg"/>
+                </texture>
+            </bsdf>
+        </bsdf>
+    </shape>
+
+</scene>

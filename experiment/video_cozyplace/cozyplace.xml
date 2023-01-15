@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.6.0">
+	
+	<integrator type="path">
+		<integer name="maxDepth" value="$maxDepth"/>
+		<integer name="rrDepth" value="$rrDepth"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<string name="fovAxis" value="smaller"/>
+		<float name="fov" value="35"/>
+		
+		<transform name="toWorld">
+			<lookAt origin="$origin" target="0.027  0.4 -2.603" up="0 1 0"/>
+		</transform>	
+
+		<sampler type="independent">
+			<integer name="sampleCount" value="$sampleCount"/>
+		</sampler>	
+ 		
+ 		<film id="film" type="hdrfilm">
+			<integer name="width" value="$width"/>
+			<integer name="height" value="$height"/>
+			<string name="fileFormat" value="openexr"/>
+			<boolean name="banner" value="false"/>
+		</film>
+	</sensor>
+	<emitter type="envmap">
+        <string name="filename" value="models/sunset_jhbcentral_8k.hdr"/>
+        <transform name="toWorld">
+            <!-- <matrix value="-0.224951 -0.000001 -0.974370 0.000000 -0.974370 0.000000 0.224951 0.000000 0.000000 1.000000 -0.000001 8.870000 0.000000 0.000000 0.000000 1.000000 "/> -->
+            <rotate y="1" angle="100"/>
+        </transform>
+        <float name="scale" value="1"/>
+    </emitter>
+
+	<bsdf type="svneuralbsdf" id='layered'>
+		<boolean name="isSV" value="true" />
+        <boolean name="useWhWd" value="true" />
+        <boolean name="isBSDF" value="true" />
+        <string name="pdfMode" value="two_lobe" />
+        <float name="eta1" value="$eta1"/>
+		<integer name="textureWidth" value="$texWidth" />
+		<integer name="textureHeight" value="$texHeight" />
+        <string name="AlphaTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svalpha.txt" />
+        <string name="sigmatTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svsigmat_$paramstr.txt" />
+        <string name="albedoTexturePath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svalbedo_$paramstr.txt" />
+        <string name="BRDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/weights" />
+        <string name="BTDFWeightsPath" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/weights" />
+        <string name="BRDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svdelta_$paramstr_r" />
+        <string name="BRDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svdelta_$paramstr_g" />
+        <string name="BRDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svdelta_$paramstr_b" />
+        <string name="BRDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svpredWeights_$paramstr_r" />
+        <string name="BRDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svpredWeights_$paramstr_g" />
+        <string name="BRDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir1/svpredWeights_$paramstr_b" />
+        <string name="BTDFDeltaTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr_r" />
+        <string name="BTDFDeltaTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr_g" />
+        <string name="BTDFDeltaTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svdelta_$paramstr_b" />
+        <string name="BTDFPredWeightsTexturePath_r" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr_r" />
+        <string name="BTDFPredWeightsTexturePath_g" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr_g" />
+        <string name="BTDFPredWeightsTexturePath_b" value="/home/lzr/layeredBsdfData/meta_texture/$paramdir2/svpredWeights_$paramstr_b" />
+	</bsdf>		
+    <shape type="obj" >
+		<string name="filename" value="models/otherstuff.obj" />
+
+		<boolean name="faceNormals" value="true" />
+		<transform name="toWorld">
+            <translate x="0" y="-1.0" z="1.5"/>
+
+        </transform>
+		<!-- <boolean name="flipNormals" value="true"/> -->
+		<!-- <bsdf type="roughconductor" name="surface_1">
+				<float name="extEta" value="1.49"/>
+				<float name="alpha" value="0.02"/>
+				<string name="distribution" value="ggx"/>
+				<string name="material" value="Al"/>
+		</bsdf> -->
+	</shape> 
+	
+	<!-- <bsdf type="twosided" id="sky" >
+		<bsdf type="roughplastic" >
+			<float name="alpha" value="0.15" />
+			<string name="distribution" value="ggx" />
+			<float name="intIOR" value="1.5" />
+			<float name="extIOR" value="1" />
+			<boolean name="nonlinear" value="true" />
+			<texture name="diffuseReflectance" type="bitmap" >
+				<string name="filename" value="models/beauty1.jpg" />
+				<string name="filterType" value="trilinear" />
+			</texture>
+		</bsdf>
+	</bsdf> -->
+
+	<shape type="obj" >
+		<string name="filename" value="models/glasses.obj" />
+		<transform name="toWorld" >
+			  <translate x="0" y="-1.0" z="1.5"/>
+		</transform>
+		<ref id="layered"/>
+	</shape> 
+  
+	<shape type="obj" >
+		<string name="filename" value="models/frontwall.obj" />
+		<transform name="toWorld" >
+			  <translate x="0" y="-1.0" z="1.5"/>
+		</transform>
+		<bsdf type="normalmap">
+            <texture type="bitmap">
+                <float name="gamma" value="1.0"/>
+                <string name="wrapMode" value="repeat"/>
+                <string name="filename" value="models//wall/Plaster001_2K_NormalGL.jpg"/>
+            </texture>
+            <bsdf type="roughplastic">
+                <float name="intIOR" value="1.61"/>
+                <texture name="alpha" type="bitmap">
+                    <string name="wrapMode" value="repeat"/>
+                    <string name="filename" value="models/wall/Plaster001_2K_Roughness.jpg"/>
+                </texture>
+                <texture name="diffuseReflectance" type="bitmap">
+                    <string name="wrapMode" value="repeat"/>
+                    <string name="filename" value="models/wall/Plaster001_2K_Color.jpg"/>
+                </texture>
+            </bsdf>
+        </bsdf>
+	</shape> 
+
+	<shape type="obj" >
+		<string name="filename" value="models/floor.obj" />
+		<transform name="toWorld" >
+			  <translate x="0" y="-1.0" z="1.5"/>
+		</transform>
+		<bsdf type="twosided" id="WoodFrame" >
+			<bsdf type="diffuse" >
+				<texture name="reflectance" type="bitmap" >
+					<string name="filename" value="models/floor/laminate_floor_02_diff_2k.jpg" />
+					<string name="filterType" value="trilinear" />
+				</texture>
+			</bsdf>
+		</bsdf>
+	</shape> 
+	<!-- <shape type="obj" >
+		<string name="filename" value="models/vase.obj" />
+		<transform name="toWorld" >
+			  <translate x="0" y="-1.0" z="1.5"/>
+		</transform>
+	</shape>  -->
+
+	<shape type="sphere">
+        <transform name="toWorld">
+            <scale value="2.323"/>
+            <translate x="0" y="2.3269" z="2.8955"/>
+			<rotate x="1" angle="301"/>
+			<rotate z="1" angle="3.74"/>
+        </transform>
+        <emitter type="area">
+            <spectrum name="radiance" value="2"/> 
+			<blackbody name="intensity" temperature="5700K"/>
+        </emitter>
+    </shape>  
+
+
+
+
+</scene>
